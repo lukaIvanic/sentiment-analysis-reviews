@@ -1,0 +1,1 @@
+"""Hard-voting ensemble package."""

@@ -1,0 +1,1 @@
+"""Prefit StackingClassifier ensemble package."""

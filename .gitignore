@@ -1,0 +1,46 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+
+# Environment and secrets
+.env
+.env.*
+
+# Raw downloaded datasets
+data/raw/kaggle_imdb_50k/
+data/raw/stanford_imdb/
+
+# Generated data and run artifacts
+data/processed/*
+!data/processed/.gitkeep
+
+outputs/*
+!outputs/baselines/
+!outputs/searches/
+!outputs/ensemble/
+!outputs/tables/
+!outputs/figures/
+!outputs/models/
+outputs/baselines/*
+outputs/searches/*
+outputs/ensemble/*
+outputs/tables/*
+outputs/figures/*
+outputs/models/*
+!outputs/baselines/.gitkeep
+!outputs/searches/.gitkeep
+!outputs/ensemble/.gitkeep
+!outputs/tables/.gitkeep
+!outputs/figures/.gitkeep
+!outputs/models/.gitkeep

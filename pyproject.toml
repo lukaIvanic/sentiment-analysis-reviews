@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sentiment-analysis-reviews"
+version = "0.1.0"
+description = "IMDb review sentiment analysis course project."
+requires-python = ">=3.9"
+dependencies = [
+    "joblib",
+    "lightgbm",
+    "matplotlib",
+    "mlx",
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "tokenizers",
+    "tqdm",
+    "xgboost",
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["classifiers*", "src*"]
