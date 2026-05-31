@@ -11,6 +11,22 @@ from torch.nn import functional as F
 from classifiers.tiny_transformer_mlx.config import TinyTransformerConfig
 
 
+class TorchRMSNorm(nn.Module):
+    """RMSNorm fallback for PyTorch versions before nn.RMSNorm."""
+
+    def __init__(self, d_model: int, eps: float = 1e-6):
+        super().__init__()
+        self.weight = nn.Parameter(torch.ones(d_model))
+        self.eps = eps
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        scale = torch.rsqrt(x.pow(2).mean(dim=-1, keepdim=True) + self.eps)
+        return x * scale * self.weight
+
+
+RMSNorm = getattr(nn, "RMSNorm", TorchRMSNorm)
+
+
 def sinusoidal_position_encoding(max_length: int, d_model: int) -> torch.Tensor:
     """Create non-trainable sinusoidal position encodings."""
 
@@ -75,8 +91,8 @@ class EncoderBlock(nn.Module):
 
     def __init__(self, config: TinyTransformerConfig):
         super().__init__()
-        self.attn_norm = nn.RMSNorm(config.d_model)
-        self.ffn_norm = nn.RMSNorm(config.d_model)
+        self.attn_norm = RMSNorm(config.d_model)
+        self.ffn_norm = RMSNorm(config.d_model)
         self.attention = MultiHeadSelfAttention(
             d_model=config.d_model,
             num_heads=config.num_heads,
@@ -102,7 +118,7 @@ class TinyTransformerClassifier(nn.Module):
         self.config = config
         self.embedding = nn.Embedding(config.vocab_size, config.d_model)
         self.blocks = nn.ModuleList(EncoderBlock(config) for _ in range(config.num_layers))
-        self.final_norm = nn.RMSNorm(config.d_model)
+        self.final_norm = RMSNorm(config.d_model)
         self.classifier = nn.Linear(config.d_model, config.num_classes)
         self.dropout = nn.Dropout(config.dropout)
         self.register_buffer(
