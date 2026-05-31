@@ -15,7 +15,11 @@ import numpy as np
 import torch
 from sklearn.model_selection import train_test_split
 from torch import nn
-from torch.amp import GradScaler, autocast
+from torch.amp import autocast
+try:
+    from torch.amp import GradScaler
+except ImportError:  # PyTorch 2.2 keeps GradScaler under torch.cuda.amp.
+    from torch.cuda.amp import GradScaler
 from torch.utils.data import DataLoader, TensorDataset
 
 from classifiers.tiny_transformer_mlx.config import TinyTransformerConfig
@@ -317,6 +321,13 @@ def build_scheduler(
     }
 
 
+def create_grad_scaler(*, enabled: bool) -> GradScaler:
+    try:
+        return GradScaler(device="cuda", enabled=enabled)
+    except TypeError:
+        return GradScaler(enabled=enabled)
+
+
 def train_one_epoch(
     model: nn.Module,
     loader: DataLoader,
@@ -532,7 +543,7 @@ def main() -> None:
         warmup_steps=args.warmup_steps,
         warmup_ratio=args.warmup_ratio,
     )
-    scaler = GradScaler(device="cuda", enabled=(device.type == "cuda" and amp_dtype == torch.float16))
+    scaler = create_grad_scaler(enabled=(device.type == "cuda" and amp_dtype == torch.float16))
 
     best_metric = -float("inf")
     best_epoch = 0
