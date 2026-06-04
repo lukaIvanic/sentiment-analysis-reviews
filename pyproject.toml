@@ -22,6 +22,7 @@ dependencies = [
 [project.optional-dependencies]
 mlx = ["mlx"]
 cuda = ["torch"]
+pretrained = ["torch", "transformers[torch]", "sentencepiece"]
 
 [tool.ruff]
 line-length = 100

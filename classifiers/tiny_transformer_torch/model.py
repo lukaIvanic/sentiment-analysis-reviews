@@ -80,7 +80,7 @@ class MultiHeadSelfAttention(nn.Module):
             key,
             value,
             attn_mask=allowed_mask,
-            dropout_p=self.dropout if self.training else 0.0,
+            dropout_p=0.0,
         )
         attended = attended.transpose(1, 2).contiguous().view(batch_size, seq_len, d_model)
         return self.out(attended)
