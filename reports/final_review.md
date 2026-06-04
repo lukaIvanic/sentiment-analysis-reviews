@@ -23,6 +23,8 @@ The remaining risks are real but defensible:
   classifier, but a stricter grader could have preferred broader search.
 - The Croatian report is ASCII-only rather than fully written with Croatian
   diacritics. It is readable and consistent, but less polished typographically.
+- The presentation is readable and rendered cleanly, but two table-heavy slides
+  are visually plain compared with the stronger generated-image slides.
 
 Neither issue looks like a missing required component. They are more likely to
 cost points than to fail the submission.
@@ -52,12 +54,20 @@ cost points than to fail the submission.
 
 - Python source compilation: `python -m compileall src classifiers` passed.
 - DOCX render: `reports/final_report/analiza_sentimenta_recenzija.docx`
-  rendered successfully to 40 PNG pages.
-- Report source length after appendix expansion and visual guide: 8,928 words.
+  rendered successfully to 41 PNG pages.
+- Report source length after appendix expansion and visual guide: 9,348 words.
+- DOCX structure check: 23 embedded images, 23 centered image paragraphs,
+  23 captions, 13 tables, and 13 bordered tables.
+- Revised visual QA: affected DOCX pages were inspected one by one, especially
+  the TF-IDF/pipeline pages, transformer section, Appendix H classifier-card
+  pages, and final Appendix I pages. The dangling final-page orphan was fixed.
+- Appendix H includes one detailed image-generated card for each required
+  classifier family, rather than a single vague overview graphic.
 - Generated explanatory infographics are tracked under `figures/generated/`
   and embedded in the DOCX.
-- Presentation: 12 slides, within the 10-20 slide guidance. Prior layout QA
-  passed with 0 errors and 0 warnings.
+- Presentation: 12 slides, within the 10-20 slide guidance. The final PPTX was
+  rendered through artifact-tool and each slide preview was inspected one by
+  one. No overlaps were found; two table slides are plain but readable.
 - Important generated results were copied into tracked files:
   `reports/final_report/results_table.csv` and
   `reports/final_report/results_tables.md`.

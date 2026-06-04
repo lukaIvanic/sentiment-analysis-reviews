@@ -73,8 +73,12 @@ Source of truth: `AGENTS.md` and the introductory course PDF.
   required TF-IDF/classical comparison.
 - `outputs/` is ignored by git; important final numbers must be copied into
   tracked report/presentation files.
-- Final report renders to 40 DOCX pages and includes labeled generated
+- Final report renders to 41 DOCX pages and includes 23 centered/captioned
   explanatory infographics under `figures/generated/`.
+- Appendix H now contains one detailed image-generated card for each required
+  classifier family: MultinomialNB, ComplementNB, LogisticRegression,
+  LinearSVC, SGDClassifier, PassiveAggressiveClassifier, RandomForestClassifier,
+  ExtraTreesClassifier, XGBoostClassifier, and LightGBMClassifier.
 
 ## Progress Checklist
 
@@ -134,6 +138,12 @@ Use these statuses:
 - `[x]` Ensure all claims have local file/output evidence.
 - `[x]` Include generated explanatory infographics for the pipeline, TF-IDF,
   model families, metrics, ensembles, results, and transformer extension.
+- `[x]` Rebuild the DOCX with real Word formatting: centered figures, italic
+  captions, bordered tables, repeated table headers, and cleaner appendix page
+  breaks.
+- `[x]` Inspect the revised DOCX render one page at a time for the affected
+  figure-heavy pages, including Appendix H classifier cards and the final
+  Appendix I pages.
 
 ### Presentation
 
@@ -142,6 +152,9 @@ Use these statuses:
 - `[x]` Keep it short enough to present comfortably.
 - `[x]` Include problem, dataset, methods, result table, final ensemble,
   transformer extension, conclusion.
+- `[x]` Render the PPTX through the presentation artifact-tool inspector and
+  inspect all 12 slide previews one by one. Slides are readable; table slides
+  are plain but acceptable.
 
 ### Reproducibility / Submission Package
 
