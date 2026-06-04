@@ -73,6 +73,8 @@ Source of truth: `AGENTS.md` and the introductory course PDF.
   required TF-IDF/classical comparison.
 - `outputs/` is ignored by git; important final numbers must be copied into
   tracked report/presentation files.
+- Final report renders to 40 DOCX pages and includes labeled generated
+  explanatory infographics under `figures/generated/`.
 
 ## Progress Checklist
 
@@ -92,70 +94,72 @@ Use these statuses:
 
 ### Assignment Coverage
 
-- `[ ]` Re-read `AGENTS.md` and the course PDF before writing final claims.
-- `[ ]` Verify selected topic and professor-provided dataset sources are stated
+- `[x]` Re-read `AGENTS.md` and the course PDF before writing final claims.
+- `[x]` Verify selected topic and professor-provided dataset sources are stated
   accurately in the report.
-- `[ ]` Verify all 10 required classifier outputs exist and contain the required
+- `[x]` Verify all 10 required classifier outputs exist and contain the required
   metrics and confusion matrices.
-- `[!]` Strengthen or clearly justify the `RandomizedSearchCV`/cross-validation
+- `[x]` Strengthen or clearly justify the `RandomizedSearchCV`/cross-validation
   requirement. Current known evidence includes tuned `MultinomialNB`
-  (`n_iter=10`, `cv=3`), but a stricter professor might expect more than one
-  tuned model or a clearer explanation.
-- `[!]` Handle log-loss carefully for non-probabilistic models such as
+  (`n_iter=10`, `cv=3`). A stricter professor might prefer broader tuning, but
+  the report now states this limitation honestly.
+- `[x]` Handle log-loss carefully for non-probabilistic models such as
   `LinearSVC`, hinge-loss `SGDClassifier`, and `PassiveAggressiveClassifier`.
   Either provide calibrated/probabilistic companion results or explicitly
   document why log-loss is unavailable for those exact hard-margin-style models.
-- `[ ]` Confirm final `VotingClassifier`/`StackingClassifier` result is included
+- `[x]` Confirm final `VotingClassifier`/`StackingClassifier` result is included
   and interpreted honestly, even though it does not beat `LinearSVC`.
-- `[ ]` Clearly separate required course work from optional transformer
+- `[x]` Clearly separate required course work from optional transformer
   extension work.
 
 ### Report
 
-- `[ ]` Create final report source under `reports/final_report/` or equivalent.
-- `[ ]` Export final report to professor-acceptable format (`.pdf`, `.docx`,
+- `[x]` Create final report source under `reports/final_report/` or equivalent.
+- `[x]` Export final report to professor-acceptable format (`.pdf`, `.docx`,
   or `.tex`).
-- `[ ]` Include task definition, no-manual-labelling note, dataset sources, and
+- `[x]` Include task definition, no-manual-labelling note, dataset sources, and
   train/test split.
-- `[ ]` Explain TF-IDF and how vocabulary/ngrams are built from training data.
-- `[ ]` Explain each required classifier briefly and sensibly.
-- `[ ]` Include one compact table comparing all required classifiers on all
+- `[x]` Explain TF-IDF and how vocabulary/ngrams are built from training data.
+- `[x]` Explain each required classifier briefly and sensibly.
+- `[x]` Include one compact table comparing all required classifiers on all
   required metrics.
-- `[ ]` Include confusion matrix discussion for at least the best classical
+- `[x]` Include confusion matrix discussion for at least the best classical
   model and final ensemble; include transformer confusion matrix only as
   optional extension if space allows.
-- `[ ]` Include RandomizedSearchCV/cross-validation setup and best parameters.
-- `[ ]` Include final model section for Voting/Stacking.
-- `[ ]` Include optional transformer section as extra research, not as a
+- `[x]` Include RandomizedSearchCV/cross-validation setup and best parameters.
+- `[x]` Include final model section for Voting/Stacking.
+- `[x]` Include optional transformer section as extra research, not as a
   substitute for assignment requirements.
-- `[ ]` Include limitations and conclusion.
-- `[ ]` Ensure all claims have local file/output evidence.
+- `[x]` Include limitations and conclusion.
+- `[x]` Ensure all claims have local file/output evidence.
+- `[x]` Include generated explanatory infographics for the pipeline, TF-IDF,
+  model families, metrics, ensembles, results, and transformer extension.
 
 ### Presentation
 
-- `[ ]` Create presentation source under `presentation/`.
-- `[ ]` Export final presentation to `.pptx` or `.tex`.
-- `[ ]` Keep it short enough to present comfortably.
-- `[ ]` Include problem, dataset, methods, result table, final ensemble,
+- `[x]` Create presentation source under `presentation/`.
+- `[x]` Export final presentation to `.pptx` or `.tex`.
+- `[x]` Keep it short enough to present comfortably.
+- `[x]` Include problem, dataset, methods, result table, final ensemble,
   transformer extension, conclusion.
 
 ### Reproducibility / Submission Package
 
-- `[ ]` Improve README with install and run instructions.
-- `[ ]` Add a short "submission contents" section explaining what to hand in.
-- `[ ]` Decide whether generated outputs should remain ignored or whether a
+- `[x]` Improve README with install and run instructions.
+- `[x]` Add a short "submission contents" section explaining what to hand in.
+- `[x]` Decide whether generated outputs should remain ignored or whether a
   small tracked results table should be committed.
-- `[ ]` Ensure code can be run from repo root with `PYTHONPATH=.` or package
+- `[x]` Ensure code can be run from repo root with `PYTHONPATH=.` or package
   install instructions.
-- `[ ]` Remove or avoid submitting irrelevant scratch/SRO handoff artifacts.
-- `[ ]` Final git status should be understood; no accidental huge files.
+- `[x]` Remove or avoid submitting irrelevant scratch/SRO handoff artifacts.
+- `[x]` Final git status should be understood; no accidental huge files.
 
 ### Final Review
 
-- `[ ]` Run a strict self-review as the professor.
-- `[ ]` Fix every legitimate issue found by the strict review.
-- `[ ]` Perform final "would the professor fail me?" check.
-- `[ ]` Perform final "does this look like AI slop?" check and make the writing
+- `[x]` Run a strict self-review as the professor.
+- `[x]` Fix every legitimate issue found by the strict review.
+- `[x]` Perform final "would the professor fail me?" check.
+- `[x]` Perform final "does this look like AI slop?" check and make the writing
   concrete, specific, and evidence-backed.
 
 ## Worker Prompt
