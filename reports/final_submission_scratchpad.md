@@ -115,10 +115,10 @@ Use these statuses:
   accurately in the report.
 - `[x]` Verify all 10 required classifier outputs exist and contain the required
   metrics and confusion matrices.
-- `[x]` Strengthen or clearly justify the `RandomizedSearchCV`/cross-validation
-  requirement. Current known evidence includes tuned `MultinomialNB`
-  (`n_iter=10`, `cv=3`). A stricter professor might prefer broader tuning, but
-  the report now states this limitation honestly.
+- `[x]` Strengthen the `RandomizedSearchCV`/cross-validation requirement.
+  Final evidence now includes a broad `RandomizedSearchCV` run over all 10
+  required classifier families (`n_iter=5`, `cv=3`, scoring `f1`), with tracked
+  artifacts in `outputs/searches/randomized_search_cv_required_n5_cv3/`.
 - `[x]` Handle log-loss carefully for non-probabilistic models such as
   `LinearSVC`, hinge-loss `SGDClassifier`, and `PassiveAggressiveClassifier`.
   Either provide calibrated/probabilistic companion results or explicitly
@@ -222,6 +222,8 @@ Complete the following:
 3. If the RandomizedSearchCV/cross-validation evidence is too thin for a human
    professor, implement or run a reasonable additional search for one or more
    fast classical models, preferably without using local Mac for intensive work.
+   Status: done more broadly than originally required; all 10 required
+   classifier families now have `RandomizedSearchCV(n_iter=5, cv=3)` evidence.
 4. Resolve the log-loss issue honestly. For classifiers without probabilities,
    either add calibrated/probabilistic companion results or document clearly why
    log-loss is not mathematically available for those exact model outputs.

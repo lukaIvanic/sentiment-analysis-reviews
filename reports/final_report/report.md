@@ -242,10 +242,13 @@ Rezultat je vrlo dobar s obzirom na jednostavnost modela. Nedostatak je to sto
 model ne uci odnose izmedu znacajki: rijeci i fraze se tretiraju kao uvjetno
 nezavisni signali.
 
-Tuned `MultinomialNB` koristi `RandomizedSearchCV` s 10 iteracija i 3 folda.
-Njegova testna tocnost je `0.8854`, sto je malo poboljsanje, ali potvrduje da
-TF-IDF parametri i `alpha` smoothing utjecu na rezultat. Ipak, vece poboljsanje
-u projektu dolazi od prelaska na diskriminativne linearne modele.
+Pocetni NB-specific tuned eksperiment koristio je `RandomizedSearchCV` s 10
+iteracija i 3 folda. Njegova testna tocnost je `0.8854`, sto je malo
+poboljsanje, ali potvrduje da TF-IDF parametri i `alpha` smoothing utjecu na
+rezultat. U zavrsnoj provjeri zahtjeva dodatno je proveden siri
+`RandomizedSearchCV` nad svih deset propisanih klasifikatora; rezultati su
+prikazani u poglavlju 7. Ipak, najvece poboljsanje u projektu dolazi od prelaska
+na diskriminativne linearne modele.
 
 ### 6.1.2 ComplementNB
 
@@ -412,44 +415,66 @@ modela.
 # 7. Validacija i pretraga hiperparametara
 
 Svi modeli su evaluirani na istom izdvojenom testnom skupu od 10 000 recenzija.
-Za zahtjev `RandomizedSearchCV (CV)` izveden je zaseban tuned eksperiment za
-`MultinomialNB`. Pretraga je koristila:
+Za zahtjev `RandomizedSearchCV (CV)` proveden je zajednicki tuned eksperiment za
+svih deset propisanih klasicnih TF-IDF klasifikatora. Pretraga je koristila:
 
 - `RandomizedSearchCV`,
-- `n_iter=10`,
+- `n_iter=5` za svaku obitelj modela,
 - `cv=3`,
 - metriku za odabir `f1`,
-- stratificirane foldove preko trening dijela skupa.
+- isti stratificirani 80/20 split kao baseline eksperimenti,
+- kombinacije TF-IDF hiperparametara i model-specific hiperparametara.
 
-Najbolji pronadeni parametri bili su:
+To znaci da je za svaku obitelj modela uzorkovano 5 kombinacija, a svaka
+kombinacija je ocijenjena kroz 3 folda. Za deset klasifikatora to daje 150 CV
+fitova plus zavrsni refit najboljeg modela na cijelom trening splitu. Ovo nije
+iscrpna optimizacija svih mogucih hiperparametara, nego namjerno ogranicena
+provjera zahtjeva i razumna usporedba modela unutar roka projekta.
 
-- `classifier__alpha=0.5`,
-- `tfidf__max_df=0.9`,
-- `tfidf__max_features=80000`,
-- `tfidf__min_df=3`,
-- `tfidf__ngram_range=(1, 2)`,
-- `tfidf__sublinear_tf=True`.
-
-Najbolji srednji F1 rezultat u unakrsnoj validaciji bio je `0.8850`. Na testnom
-skupu tuned `MultinomialNB` postigao je tocnost `0.8854`, sto je malo bolje od
-osnovnog `MultinomialNB` rezultata `0.8841`.
-
-Ovaj rezultat pokazuje dvije stvari. Prvo, zahtijevani `RandomizedSearchCV` i
-CV postupak su stvarno provedeni. Drugo, za ovaj konkretni skup najveci skok u
-performansama nije dosao od finog podesavanja Bayesovog modela, nego od izbora
-modela: linearni modeli nad istim TF-IDF znacajkama rade znatno bolje.
+Artefakti pretrage spremljeni su u
+`outputs/searches/randomized_search_cv_required_n5_cv3/`. Globalni
+`summary.csv` i `summary.md` sadrze usporedbu svih modela, a svaki model ima
+vlastiti `search_results.csv`, `run_config.json`, metrike, matricu zabune i
+klasifikacijski izvjestaj.
 
 ![Slika 15. Koncept `RandomizedSearchCV` postupka: uzorkuje se vise kombinacija
 hiperparametara, svaka se ocjenjuje kroz foldove unakrsne validacije, a bira se
 kombinacija s najboljim srednjim rezultatom.](figures/generated/randomized_search_cv.png){width=95%}
 
+| Model | Best CV F1 | Test ACC | Test F1 | MCC | Log-loss |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| MultinomialNB | 0.8800 | 0.8819 | 0.8829 | 0.7639 | 0.3044 |
+| ComplementNB | 0.8800 | 0.8819 | 0.8829 | 0.7639 | 0.3044 |
+| LogisticRegression | 0.8946 | 0.9029 | 0.9035 | 0.8059 | 0.2716 |
+| LinearSVC | 0.9081 | 0.9168 | 0.9172 | 0.8336 | n/a |
+| SGDClassifier | 0.8946 | 0.8975 | 0.8987 | 0.7952 | 0.3744 |
+| PassiveAggressiveClassifier | 0.8986 | 0.9054 | 0.9054 | 0.8108 | n/a |
+| RandomForestClassifier | 0.8666 | 0.8743 | 0.8765 | 0.7491 | 0.5558 |
+| ExtraTreesClassifier | 0.8762 | 0.8745 | 0.8776 | 0.7499 | 0.5944 |
+| XGBoostClassifier | 0.8427 | 0.8412 | 0.8475 | 0.6848 | 0.3842 |
+| LightGBMClassifier | 0.8836 | 0.8922 | 0.8927 | 0.7844 | 0.2607 |
+
+Najbolji CV rezultat i najbolji testni rezultat u ovoj siroj pretrazi dao je
+`LinearSVC`: srednji CV F1 `0.9081`, testna tocnost `0.9168` i testni F1
+`0.9172`. To potvrduje glavnu eksperimentalnu poruku projekta: za IMDb TF-IDF
+sentiment klasifikaciju dobro regulariziran linearni margin model moze biti
+jaci od znatno slozenijih tree/boosting modela.
+
+Potpune najbolje uzorkovane konfiguracije nalaze se u tracked artefaktu
+`outputs/searches/randomized_search_cv_required_n5_cv3/summary.md`. Kljucni
+primjeri su: `LinearSVC` je izabran s `C=0.3`, bigramima i
+`max_features=30000`; `LogisticRegression` s `C=1.0` i unigramima; a
+`LightGBMClassifier` s `n_estimators=200`, `num_leaves=31` i
+`learning_rate=0.1`.
+
 # 8. Rezultati klasicnih TF-IDF modela
 
-Tablice 1 i 2 prikazuju glavne rezultate za propisane klasicne modele.
-Ukljucen je i tuned `MultinomialNB` redak jer pokazuje rezultat
-`RandomizedSearchCV` postupka. Tablice su podijeljene zbog citljivosti: prva
-prikazuje osnovne klasifikacijske metrike, a druga metrike koje ovise o
-rangiranju ili probabilistickim izlazima.
+Tablice 1 i 2 prikazuju glavne baseline rezultate za propisane klasicne modele.
+Ukljucen je i raniji tuned `MultinomialNB` redak kao dodatna Bayesova usporedba,
+dok siri `RandomizedSearchCV` rezultati svih deset obitelji modela stoje u
+poglavlju 7. Tablice su podijeljene zbog citljivosti: prva prikazuje osnovne
+klasifikacijske metrike, a druga metrike koje ovise o rangiranju ili
+probabilistickim izlazima.
 
 ![Slika 16. Sazetak najboljih rezultata na testnom skupu od 10 000 recenzija:
 najbolji klasicni model je `LinearSVC`, najbolji ensemble po tocnosti je hard
@@ -778,14 +803,16 @@ Primjer pokretanja jednog obaveznog modela:
 PYTHONPATH=. python -m classifiers.linear_svc.run
 ```
 
-Primjer pokretanja tuned Bayesovog modela s `RandomizedSearchCV`:
+Primjer pokretanja siroke `RandomizedSearchCV` provjere za svih deset
+klasifikatora:
 
 ```bash
-PYTHONPATH=. python -m classifiers.multinomial_nb.run \
-  --tune \
-  --n-iter 10 \
+PYTHONPATH=. python -m classifiers.randomized_search_cv.run \
+  --models all \
+  --n-iter 5 \
   --cv 3 \
-  --output-dir outputs/baselines/multinomial_nb_tuned_n10_cv3
+  --scoring f1 \
+  --output-dir outputs/searches/randomized_search_cv_required_n5_cv3
 ```
 
 Primjer pokretanja soft voting ensemble modela:
@@ -813,12 +840,13 @@ jednom splitu Kaggle IMDb skupa. Iako je split stratificiran i velik, dodatna
 evaluacija na potpuno odvojenom izvoru mogla bi dati jos jacu procjenu
 generalizacije.
 
-Drugo ogranicenje je opseg hiperparametarske pretrage. `RandomizedSearchCV` je
-proveden i dokumentiran za `MultinomialNB`, ali nisu svi modeli duboko tunirani.
-To je praktican kompromis: deset modela, ensemble varijante i dodatni
-transformerski eksperimenti vec daju velik usporedni prostor. Za maksimalno
-optimiranje klasicnih modela bilo bi korisno prosiriti pretragu na
-`LogisticRegression`, `LinearSVC`, `LightGBMClassifier` i ensemble tezine.
+Drugo ogranicenje je dubina hiperparametarske pretrage. `RandomizedSearchCV` je
+proveden i dokumentiran za svih deset propisanih klasicnih modela, ali s
+namjerno ogranicenim budzetom `n_iter=5` i `cv=3` po modelu. To je praktican
+kompromis: deset modela, ensemble varijante i dodatni transformerski
+eksperimenti vec daju velik usporedni prostor. Za maksimalno optimiranje
+klasicnih modela bilo bi korisno povecati `n_iter`, prosiriti distribucije
+parametara, dodati kalibraciju za margin modele i pretraziti ensemble tezine.
 
 Trece ogranicenje je log-loss kod modela bez probabilistickog izlaza. Umjesto
 da se ta metrika umjetno racuna iz tvrdih predikcija, u izvjestaju je oznaceno
@@ -886,6 +914,7 @@ repozitorija. Ako paket nije instaliran u editable modu, koristi se
 | --- | --- | --- |
 | MultinomialNB baseline | `PYTHONPATH=. python -m classifiers.multinomial_nb.run` | `outputs/baselines/multinomial_nb` |
 | MultinomialNB tuned | `PYTHONPATH=. python -m classifiers.multinomial_nb.run --tune --n-iter 10 --cv 3 --output-dir outputs/baselines/multinomial_nb_tuned_n10_cv3` | `outputs/baselines/multinomial_nb_tuned_n10_cv3` |
+| RandomizedSearchCV svih 10 modela | `PYTHONPATH=. python -m classifiers.randomized_search_cv.run --models all --n-iter 5 --cv 3 --scoring f1 --output-dir outputs/searches/randomized_search_cv_required_n5_cv3` | `outputs/searches/randomized_search_cv_required_n5_cv3` |
 | ComplementNB baseline | `PYTHONPATH=. python -m classifiers.complement_nb.run` | `outputs/baselines/complement_nb` |
 | LogisticRegression baseline | `PYTHONPATH=. python -m classifiers.logistic_regression.run` | `outputs/baselines/logistic_regression` |
 | LinearSVC baseline | `PYTHONPATH=. python -m classifiers.linear_svc.run` | `outputs/baselines/linear_svc` |
@@ -899,18 +928,22 @@ repozitorija. Ako paket nije instaliran u editable modu, koristi se
 | Hard VotingClassifier | `PYTHONPATH=. python -m classifiers.hard_voting_classifier.run` | `outputs/ensemble/hard_voting_classifier` |
 | Prefit StackingClassifier | `PYTHONPATH=. python -m classifiers.stacking_classifier_prefit.run` | `outputs/ensemble/stacking_classifier_prefit` |
 
-Svaki od ovih izlaznih direktorija sadrzi barem `metrics.json`,
+Svaki od baseline i ensemble izlaznih direktorija sadrzi barem `metrics.json`,
 `confusion_matrix.json`, `classification_report.txt` i `run_config.json`.
-`outputs/` direktorij nije namijenjen predaji kao veliki generirani artefakt,
-zato su zavrsni rezultati prepisani u `reports/final_report/results_table.csv`
-i `reports/final_report/results_tables.md`.
+Direktorij `outputs/searches/randomized_search_cv_required_n5_cv3/` dodatno
+sadrzi `summary.csv`, `summary.md` i po jedan `search_results.csv` za svaki od
+deset tuned modela. Vecina `outputs/` direktorija nije namijenjena predaji kao
+veliki generirani artefakt, ali je ovaj compact CV direktorij sacuvan kao dokaz
+za zahtjev `RandomizedSearchCV`. Zavrsni rezultati su dodatno prepisani u
+`reports/final_report/results_table.csv` i
+`reports/final_report/results_tables.md`.
 
 # Dodatak C: Pregled konfiguracija klasicnih modela
 
-Svi klasicni modeli koriste isti osnovni dataset, split i TF-IDF prikaz, osim
-tuned `MultinomialNB` eksperimenta gdje je `RandomizedSearchCV` odabrao malo
-drugacije TF-IDF parametre. Osnovni split je 40 000 trening recenzija i 10 000
-testnih recenzija, s `random_state=42`.
+Svi klasicni baseline modeli koriste isti osnovni dataset, split i TF-IDF
+prikaz. Osnovni split je 40 000 trening recenzija i 10 000 testnih recenzija, s
+`random_state=42`. Dodatni `RandomizedSearchCV` eksperiment u poglavlju 7
+pretrazuje TF-IDF i model-specific parametre za svih deset obitelji modela.
 
 | Model | Glavni parametri modela | Probabilisticki izlaz | Napomena |
 | --- | --- | --- | --- |
@@ -927,9 +960,10 @@ testnih recenzija, s `random_state=42`.
 | LightGBMClassifier | `n_estimators=200`, `num_leaves=31`, `learning_rate=0.1` | da | najbolji tree/boosting model i najnizi klasicni log-loss |
 
 Osnovni TF-IDF parametri su `ngram_range=(1, 2)`, `min_df=2`, `max_df=0.95`,
-`max_features=50000`, `strip_accents="unicode"` i `sublinear_tf=True`. Tuned
-`MultinomialNB` koristi `max_df=0.9`, `min_df=3`, `max_features=80000` i isti
-raspon n-grama. Vokabular se uvijek uci samo na trening podacima.
+`max_features=50000`, `strip_accents="unicode"` i `sublinear_tf=True`.
+RandomizedSearchCV pretraga dodatno uzorkuje `ngram_range`, `min_df`, `max_df`,
+`max_features` i `sublinear_tf`, uz parametre samih klasifikatora. Vokabular se
+uvijek uci samo na trening podacima.
 
 # Dodatak D: Detalji ensemble modela
 
@@ -984,9 +1018,9 @@ Ova kontrolna lista sluzi kao zavrsna provjera uskladenosti s temom 7.
 | Analiza sentimenta recenzija | ispunjeno | Kaggle IMDb recenzije, binarne oznake `positive`/`negative` |
 | Bez rucnog oznacavanja | ispunjeno | koriste se vec oznaceni javni skupovi |
 | TF-IDF prikaz | ispunjeno | `TfidfVectorizer` u klasicnim pipelineovima |
-| Najmanje 10 klasifikatora | ispunjeno | 10 propisanih modela plus tuned NB redak |
-| RandomizedSearchCV | ispunjeno | tuned `MultinomialNB`, `n_iter=10`, `cv=3` |
-| Cross-validation | ispunjeno | 3-fold CV u tuned NB eksperimentu |
+| Najmanje 10 klasifikatora | ispunjeno | 10 propisanih obitelji modela |
+| RandomizedSearchCV | ispunjeno | svih 10 propisanih modela, `n_iter=5`, `cv=3` |
+| Cross-validation | ispunjeno | 3-fold CV u siroj RandomizedSearchCV pretrazi |
 | ACC, BACC, precision, recall, F1 | ispunjeno | tablice rezultata u poglavlju 8 |
 | ROC-AUC i PR-AUC | ispunjeno | racunato iz vjerojatnosti ili `decision_function` |
 | MCC | ispunjeno | tablice rezultata u poglavlju 8 |
@@ -997,8 +1031,8 @@ Ova kontrolna lista sluzi kao zavrsna provjera uskladenosti s temom 7.
 | Prezentacija u prihvatljivom formatu | ispunjeno | `presentation/analiza_sentimenta_recenzija.pptx` |
 | Upute za pokretanje | ispunjeno | `README.md` i poglavlje 14 |
 
-Preostali kompromisi su namjerno navedeni u poglavlju ogranicenja: nije tuniran
-svaki model, primarna evaluacija je jedan stratificirani Kaggle split, a
+Preostali kompromisi su namjerno navedeni u poglavlju ogranicenja: modeli nisu
+iscrpno optimirani, primarna evaluacija je jedan stratificirani Kaggle split, a
 nekalibrirani margin-based modeli nemaju log-loss. Ti kompromisi ne mijenjaju
 cinjenicu da su trazeni dijelovi projekta provedeni i dokumentirani.
 

@@ -69,7 +69,7 @@ Run from the project root:
 python -m classifiers.multinomial_nb.run
 ```
 
-Course-compliant tuned run with `RandomizedSearchCV`:
+NB-specific tuned run with `RandomizedSearchCV`:
 
 ```bash
 python -m classifiers.multinomial_nb.run --tune
@@ -95,6 +95,13 @@ Optional quick tuned smoke-test run:
 
 ```bash
 python -m classifiers.multinomial_nb.run --limit 1000 --tune --n-iter 5 --cv 3 --output-dir outputs/baselines/multinomial_nb_tuned_smoke
+```
+
+The final report also includes a broader `RandomizedSearchCV` coverage run over
+all ten required classifier families:
+
+```bash
+python -m classifiers.randomized_search_cv.run --models all --n-iter 5 --cv 3 --scoring f1 --output-dir outputs/searches/randomized_search_cv_required_n5_cv3
 ```
 
 Expected outputs:

@@ -1,0 +1,49 @@
+{
+  "classifier": "LogisticRegression",
+  "csv_path": "/workspace/sentiment-analysis-reviews/data/raw/kaggle_imdb_50k/IMDB Dataset.csv",
+  "dataset": "Kaggle IMDb 50K Movie Reviews",
+  "model_key": "logistic_regression",
+  "output_dir": "outputs/searches/randomized_search_cv_required_n5_cv3/logistic_regression",
+  "random_state": 42,
+  "row_limit": null,
+  "test_class_counts": {
+    "negative": 5000,
+    "positive": 5000
+  },
+  "test_rows": 10000,
+  "test_size": 0.2,
+  "tfidf": {
+    "actual_features": 30000,
+    "lowercase": true,
+    "strip_accents": "unicode"
+  },
+  "train_class_counts": {
+    "negative": 20000,
+    "positive": 20000
+  },
+  "train_rows": 40000,
+  "tuning": {
+    "best_params": {
+      "classifier__C": 1.0,
+      "tfidf__max_df": 0.9,
+      "tfidf__max_features": 30000,
+      "tfidf__min_df": 5,
+      "tfidf__ngram_range": [
+        1,
+        1
+      ],
+      "tfidf__sublinear_tf": true
+    },
+    "best_score": 0.8945511960156707,
+    "candidate_space_size": 240,
+    "cv": 3,
+    "elapsed_seconds": 66.33777735201875,
+    "enabled": true,
+    "estimator_jobs": 2,
+    "n_iter_effective": 5,
+    "n_iter_requested": 5,
+    "scoring": "f1",
+    "search_class": "RandomizedSearchCV",
+    "search_jobs": 2
+  }
+}

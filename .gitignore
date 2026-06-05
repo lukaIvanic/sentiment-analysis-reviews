@@ -40,6 +40,8 @@ outputs/figures/*
 outputs/models/*
 !outputs/baselines/.gitkeep
 !outputs/searches/.gitkeep
+!outputs/searches/randomized_search_cv_required_n5_cv3/
+!outputs/searches/randomized_search_cv_required_n5_cv3/**
 !outputs/ensemble/.gitkeep
 !outputs/tables/.gitkeep
 !outputs/figures/.gitkeep

@@ -1,0 +1,56 @@
+{
+  "classifier": "LightGBMClassifier",
+  "csv_path": "/workspace/sentiment-analysis-reviews/data/raw/kaggle_imdb_50k/IMDB Dataset.csv",
+  "dataset": "Kaggle IMDb 50K Movie Reviews",
+  "model_key": "lightgbm_classifier",
+  "output_dir": "outputs/searches/randomized_search_cv_required_n5_cv3/lightgbm_classifier",
+  "random_state": 42,
+  "row_limit": null,
+  "test_class_counts": {
+    "negative": 5000,
+    "positive": 5000
+  },
+  "test_rows": 10000,
+  "test_size": 0.2,
+  "tfidf": {
+    "actual_features": 50000,
+    "lowercase": true,
+    "strip_accents": "unicode"
+  },
+  "train_class_counts": {
+    "negative": 20000,
+    "positive": 20000
+  },
+  "train_rows": 40000,
+  "tuning": {
+    "best_params": {
+      "classifier__colsample_bytree": 1.0,
+      "classifier__learning_rate": 0.1,
+      "classifier__min_child_samples": 20,
+      "classifier__n_estimators": 200,
+      "classifier__num_leaves": 31,
+      "classifier__reg_lambda": 0.5,
+      "classifier__subsample": 0.8,
+      "classifier__subsample_freq": 1,
+      "tfidf__max_df": 0.95,
+      "tfidf__max_features": 50000,
+      "tfidf__min_df": 2,
+      "tfidf__ngram_range": [
+        1,
+        2
+      ],
+      "tfidf__sublinear_tf": true
+    },
+    "best_score": 0.8835567380305184,
+    "candidate_space_size": 31104,
+    "cv": 3,
+    "elapsed_seconds": 443.6962721180171,
+    "enabled": true,
+    "estimator_jobs": 2,
+    "n_iter_effective": 5,
+    "n_iter_requested": 5,
+    "scoring": "f1",
+    "search_class": "RandomizedSearchCV",
+    "search_jobs": 2
+  }
+}

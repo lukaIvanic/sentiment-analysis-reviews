@@ -75,14 +75,15 @@ Run the best classical baseline:
 PYTHONPATH=. python -m classifiers.linear_svc.run
 ```
 
-Run the RandomizedSearchCV example used in the report:
+Run the broad RandomizedSearchCV coverage search used in the final report:
 
 ```bash
-PYTHONPATH=. python -m classifiers.multinomial_nb.run \
-  --tune \
-  --n-iter 10 \
+PYTHONPATH=. python -m classifiers.randomized_search_cv.run \
+  --models all \
+  --n-iter 5 \
   --cv 3 \
-  --output-dir outputs/baselines/multinomial_nb_tuned_n10_cv3
+  --scoring f1 \
+  --output-dir outputs/searches/randomized_search_cv_required_n5_cv3
 ```
 
 Run the final soft-voting ensemble:

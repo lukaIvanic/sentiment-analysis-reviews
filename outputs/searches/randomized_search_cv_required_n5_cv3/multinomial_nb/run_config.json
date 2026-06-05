@@ -1,0 +1,49 @@
+{
+  "classifier": "MultinomialNB",
+  "csv_path": "/workspace/sentiment-analysis-reviews/data/raw/kaggle_imdb_50k/IMDB Dataset.csv",
+  "dataset": "Kaggle IMDb 50K Movie Reviews",
+  "model_key": "multinomial_nb",
+  "output_dir": "outputs/searches/randomized_search_cv_required_n5_cv3/multinomial_nb",
+  "random_state": 42,
+  "row_limit": null,
+  "test_class_counts": {
+    "negative": 5000,
+    "positive": 5000
+  },
+  "test_rows": 10000,
+  "test_size": 0.2,
+  "tfidf": {
+    "actual_features": 30000,
+    "lowercase": true,
+    "strip_accents": "unicode"
+  },
+  "train_class_counts": {
+    "negative": 20000,
+    "positive": 20000
+  },
+  "train_rows": 40000,
+  "tuning": {
+    "best_params": {
+      "classifier__alpha": 0.1,
+      "tfidf__max_df": 0.9,
+      "tfidf__max_features": 30000,
+      "tfidf__min_df": 3,
+      "tfidf__ngram_range": [
+        1,
+        2
+      ],
+      "tfidf__sublinear_tf": true
+    },
+    "best_score": 0.8799536264444865,
+    "candidate_space_size": 240,
+    "cv": 3,
+    "elapsed_seconds": 72.00919157499447,
+    "enabled": true,
+    "estimator_jobs": 2,
+    "n_iter_effective": 5,
+    "n_iter_requested": 5,
+    "scoring": "f1",
+    "search_class": "RandomizedSearchCV",
+    "search_jobs": 2
+  }
+}

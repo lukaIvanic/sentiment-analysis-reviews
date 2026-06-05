@@ -7,7 +7,7 @@ be encouraging, but to decide whether the project is actually hand-in ready.
 
 ## Verdict
 
-`PASS_WITH_MINOR_RISK`
+`PASS`
 
 The submission is coherent and evidence-backed. The core task is implemented:
 IMDb sentiment analysis, no manual labelling, TF-IDF features, the ten required
@@ -15,12 +15,9 @@ classifiers, RandomizedSearchCV with cross-validation, required metrics,
 confusion matrices, and final Voting/Stacking ensembles. The report and
 presentation exist in accepted formats and have been rendered/checked.
 
-The remaining risks are real but defensible:
+The remaining risks are minor presentation/polish risks rather than missing
+requirement risks:
 
-- `RandomizedSearchCV` is demonstrated on tuned `MultinomialNB`
-  (`n_iter=10`, `cv=3`) rather than used for many classifiers. The wording of
-  the task requires RandomizedSearchCV/CV, not exhaustive tuning of every
-  classifier, but a stricter grader could have preferred broader search.
 - The Croatian report is ASCII-only rather than fully written with Croatian
   diacritics. It is readable and consistent, but less polished typographically.
 - The presentation is readable and rendered cleanly, but two table-heavy slides
@@ -38,8 +35,8 @@ cost points than to fail the submission.
 | No manual labelling | pass | report sections 3 and summary explicitly state no manual labelling |
 | TF-IDF for required comparison | pass | report section 5; classical runner folders use `TfidfVectorizer` |
 | 10 required classifiers | pass | report section 6 includes all required families |
-| RandomizedSearchCV | pass | tuned MultinomialNB row; report section 7 |
-| Cross-validation | pass | tuned MultinomialNB uses `cv=3`; report section 7 |
+| RandomizedSearchCV | pass | all 10 required classifiers, `n_iter=5`, `cv=3`; report section 7 |
+| Cross-validation | pass | 3-fold CV in the broad RandomizedSearchCV run; report section 7 |
 | ACC, BACC, precision, recall, F1 | pass | `reports/final_report/results_tables.md`; report section 8 |
 | ROC-AUC, PR-AUC, MCC | pass | `reports/final_report/results_tables.md`; report section 8 |
 | Log-loss | pass with explanation | reported where `predict_proba` exists; n/a explained for uncalibrated margin models |
@@ -58,7 +55,7 @@ cost points than to fail the submission.
 - Report source length after restructuring and transformer expansion: 7,297
   words.
 - DOCX structure check: 20 embedded images, 20 centered image paragraphs,
-  20 captions, 12 tables, and 12 bordered tables.
+  20 captions, 13 tables, and 13 bordered tables.
 - Revised visual QA: affected DOCX pages were inspected one by one, especially
   the dataset/metrics/TF-IDF pages, section 6 classifier-card pages, results
   tables, transformer section, appendices, and final Appendix G page.
@@ -71,9 +68,13 @@ cost points than to fail the submission.
   subsection to a fresh page; PDF text extraction confirms all rows render.
 - Generated explanatory infographics are tracked under `figures/generated/`
   and embedded in the DOCX.
+- Broad RandomizedSearchCV evidence is tracked under
+  `outputs/searches/randomized_search_cv_required_n5_cv3/`, including
+  `summary.csv`, `summary.md`, and per-classifier `search_results.csv`.
 - Presentation: 12 slides, within the 10-20 slide guidance. The final PPTX was
   rendered through artifact-tool and each slide preview was inspected one by
-  one. Slide 10 was refreshed with the updated scratch-transformer result. No
+  one. Slide 10 was refreshed with the updated scratch-transformer result, and
+  slide 11 was refreshed to mention the all-model RandomizedSearchCV run. No
   overlaps were found; two table slides are plain but readable.
 - Important generated results were copied into tracked files:
   `reports/final_report/results_table.csv` and
@@ -81,13 +82,13 @@ cost points than to fail the submission.
 
 ## Most Likely Point Loss
 
-The most likely reason to lose points is limited hyperparameter search. The report
-honestly says `RandomizedSearchCV` was run for `MultinomialNB`, not every model.
-That satisfies the literal requirement but is not maximal experimental depth.
-
-A smaller possible point loss is polish: the report is in Croatian content-wise
+The most likely remaining point loss is polish: the report is in Croatian content-wise
 but uses ASCII transliteration instead of diacritics. The writing is still
 specific, but it is not typographically ideal.
+
+Another small possible point loss is that the RandomizedSearchCV search is broad
+but shallow: it covers all ten required classifier families with `n_iter=5` and
+`cv=3`, not an exhaustive hyperparameter optimization campaign.
 
 ## AI-Slop Check
 
@@ -115,5 +116,5 @@ because a required part is missing, fake, unsupported, incoherent, or obviously
 AI-generated?
 
 Answer: No. The remaining risks are minor and defensible. A strict professor
-could reduce points for limited tuning breadth or typographic polish, but the
+could reduce points for shallow tuning breadth or typographic polish, but the
 core required work is present, reported, and reproducible.

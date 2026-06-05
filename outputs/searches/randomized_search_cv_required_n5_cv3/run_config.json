@@ -1,0 +1,38 @@
+{
+  "csv_path": "/workspace/sentiment-analysis-reviews/data/raw/kaggle_imdb_50k/IMDB Dataset.csv",
+  "dataset": "Kaggle IMDb 50K Movie Reviews",
+  "models": [
+    "multinomial_nb",
+    "complement_nb",
+    "logistic_regression",
+    "linear_svc",
+    "sgd_classifier",
+    "passive_aggressive",
+    "random_forest",
+    "extra_trees",
+    "xgboost_classifier",
+    "lightgbm_classifier"
+  ],
+  "output_dir": "outputs/searches/randomized_search_cv_required_n5_cv3",
+  "random_state": 42,
+  "row_limit": null,
+  "search": {
+    "cv": 3,
+    "estimator_jobs": 2,
+    "n_iter": 5,
+    "scoring": "f1",
+    "search_class": "RandomizedSearchCV",
+    "search_jobs": 2
+  },
+  "test_class_counts": {
+    "negative": 5000,
+    "positive": 5000
+  },
+  "test_rows": 10000,
+  "test_size": 0.2,
+  "train_class_counts": {
+    "negative": 20000,
+    "positive": 20000
+  },
+  "train_rows": 40000
+}
