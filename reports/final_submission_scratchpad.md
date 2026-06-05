@@ -73,7 +73,7 @@ Source of truth: `AGENTS.md` and the introductory course PDF.
   required TF-IDF/classical comparison.
 - `outputs/` is ignored by git; important final numbers must be copied into
   tracked report/presentation files.
-- Final report renders to 45 DOCX pages and includes 20 centered/captioned
+- Final report renders to 43 DOCX pages and includes 20 centered/captioned
   explanatory infographics under `figures/generated/`.
 - The report now places metrics after the dataset section and before
   preprocessing/TF-IDF, matching the natural evaluation-before-pipeline reading
@@ -88,9 +88,9 @@ Source of truth: `AGENTS.md` and the introductory course PDF.
 - The ten required classifier cards now appear in the main body, in section 6
   next to each classifier/family explanation, rather than being buried in a
   large appendix.
-- Appendices are reduced to supporting material (`Dodatak A`-`G`): artifacts,
-  run commands, environment, assignment coverage, limitations, source links, and
-  oral-presentation plan.
+- Appendices are reduced to supporting material (`Dodatak A`-`F`): artifacts,
+  run commands, model configurations, ensemble details, transformer details, and
+  the final requirement checklist.
 
 ## Progress Checklist
 
@@ -159,7 +159,7 @@ Use these statuses:
   breaks.
 - `[x]` Inspect the revised DOCX render one page at a time for the affected
   figure-heavy pages, including the TF-IDF pages, section 6 classifier cards,
-  result/confusion-matrix tables, transformer pages, and final Appendix G page.
+  result/confusion-matrix tables, transformer pages, and final Appendix F page.
 - `[x]` Ensure top-level sections start on new pages and fix the classical
   confusion-matrix table so every row renders visibly in the PDF/DOCX output.
 

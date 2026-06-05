@@ -104,17 +104,10 @@ Materijali kolegija navode dva moguca izvora:
 - Kaggle: IMDb 50K Movie Reviews,
 - Stanford: IMDb Large Movie Review Dataset.
 
-Oba skupa su preuzeta lokalno:
-
-- `data/raw/kaggle_imdb_50k/IMDB Dataset.csv`,
-- `data/raw/stanford_imdb/aclImdb`.
-
 Eksperimenti u izvjestaju koriste Kaggle IMDb 50K CSV jer je u njemu cijeli
 skup dostupan u jednoj tablici s tekstom recenzije i oznakom sentimenta. Takav
 oblik je pogodan za ponovljive eksperimente, izradu jedinstvenog train/test
-splita i usporedbu vise modela pod istim uvjetima. Stanford skup je zadrzan u
-repozitoriju kao dodatni profesorom navedeni izvor i kao provjera da tema ima
-standardni, javno oznaceni izvor podataka.
+splita i usporedbu vise modela pod istim uvjetima.
 
 Skup Kaggle IMDb 50K sadrzi:
 
@@ -128,10 +121,6 @@ Za glavne eksperimente koristen je stratificirani split:
 - 10 000 recenzija za testiranje,
 - `random_state=42`,
 - testni skup s 5 000 negativnih i 5 000 pozitivnih recenzija.
-
-Nije provedeno rucno oznacavanje. To je vazno jer je jedan od kriterija pri
-odabiru teme bio izbjegavanje projekata koji zahtijevaju manualno labeliranje
-novih podataka.
 
 # 4. Metrike
 
@@ -151,14 +140,13 @@ rezultati. Svi modeli imaju isti testni skup, pa su metrike izracunate nad istih
 - log-loss: kazna za probabilisticke predikcije,
 - matrica zabune.
 
-Kod nekih modela log-loss nije prikazan. To nije propust u racunanju, nego
-posljedica prirode modela. `LinearSVC`, `SGDClassifier` s hinge loss funkcijom
-i `PassiveAggressiveClassifier` u ovoj konfiguraciji ne daju kalibrirane
-vjerojatnosti klasa. Za njih se mogu racunati tvrde predikcije i rangirajuce
-vrijednosti (`decision_function`) za ROC-AUC/PR-AUC, ali log-loss trazi
-vjerojatnosnu distribuciju po klasama. Umjetno racunanje log-loss metrike iz
-samo tvrdih predikcija dovelo bi do beskonacnih ili neinformativnih kazni, pa
-je u rezultatima oznaceno da log-loss nije dostupan za te modele. Za modele
+Kod nekih modela log-loss nije prikazan. `LinearSVC`, `SGDClassifier` s hinge
+loss funkcijom i `PassiveAggressiveClassifier` u ovoj konfiguraciji ne daju
+kalibrirane vjerojatnosti klasa. Za njih se mogu racunati tvrde predikcije i
+rangirajuce vrijednosti (`decision_function`) za ROC-AUC/PR-AUC, ali log-loss
+trazi vjerojatnosnu distribuciju po klasama. Umjetno racunanje log-loss metrike
+iz samo tvrdih predikcija dovelo bi do beskonacnih ili neinformativnih kazni,
+pa je u rezultatima oznaceno da log-loss nije dostupan za te modele. Za modele
 koji daju `predict_proba`, log-loss je izracunat.
 
 ![Slika 1. Metrike za binarnu klasifikaciju sentimenta: matrica zabune definira
@@ -216,11 +204,7 @@ Ovo poglavlje je strukturirano kao usporedni "model atlas": prvo se zadrzava
 isti TF-IDF prikaz, a zatim se mijenja algoritam ucenja. Takva struktura slijedi
 uobicajen nacin prikaza usporednih tekstualnih klasifikacijskih eksperimenata:
 opis zadatka i vektorizacije, zatim modeli po skupinama, pa zajednicke metrike i
-rezultati. Kao korisni vanjski orijentiri posluzili su scikit-learn primjer
-klasifikacije tekstnih dokumenata rijetkim TF-IDF znacajkama i noviji IMDb
-usporedni radovi koji odvajaju klasicne TF-IDF modele od neuronskih ili
-transformerskih prosirenja. Zbog toga su kartice modela ukljucene ovdje, u
-glavnom tekstu, umjesto da budu zakopane u dodatku.
+rezultati.
 
 ## 6.1 Naivni Bayesovi modeli
 
@@ -245,10 +229,7 @@ nezavisni signali.
 Pocetni NB-specific tuned eksperiment koristio je `RandomizedSearchCV` s 10
 iteracija i 3 folda. Njegova testna tocnost je `0.8854`, sto je malo
 poboljsanje, ali potvrduje da TF-IDF parametri i `alpha` smoothing utjecu na
-rezultat. U zavrsnoj provjeri zahtjeva dodatno je proveden siri
-`RandomizedSearchCV` nad svih deset propisanih klasifikatora; rezultati su
-prikazani u poglavlju 7. Ipak, najvece poboljsanje u projektu dolazi od prelaska
-na diskriminativne linearne modele.
+rezultat.
 
 ### 6.1.2 ComplementNB
 
@@ -358,9 +339,7 @@ ne mora biti najbolji za rijetke tekstualne znacajke. Stabla moraju birati
 splitove po pojedinim znacajkama, a TF-IDF prostor ima mnogo rijetkih stupaca.
 
 Signal sentimenta je rasprsen preko velikog broja rijeci i fraza, pa linearni
-model koji koristi sve znacajke odjednom bolje odgovara problemu. Random forest
-zato ostaje vazan dio propisane usporedbe, ali ne i glavni kandidat za najbolji
-rezultat.
+model koji koristi sve znacajke odjednom bolje odgovara problemu.
 
 ### 6.3.2 ExtraTreesClassifier
 
@@ -391,10 +370,10 @@ prethodnih. U ovom projektu su ukljuceni jer su izricito navedeni u zadatku i
 jer predstavljaju jaku skupinu modela za mnoge probleme strojnog ucenja.
 
 `XGBoostClassifier` je postigao tocnost `0.8509`, najslabiju medu obaveznim
-modelima. To ne znaci da je XGBoost opcenito slab algoritam. Ovdje je problem
-kombinacija boosting stabala i vrlo rijetkog tekstualnog prostora. Matrica
-zabune pokazuje 898 lazno pozitivnih predikcija, sto znaci da je model cesce
-oznacavao recenzije kao pozitivne nego sto je trebalo.
+modelima. Ovdje je problem kombinacija boosting stabala i vrlo rijetkog
+tekstualnog prostora. Matrica zabune pokazuje 898 lazno pozitivnih predikcija,
+sto znaci da je model cesce oznacavao recenzije kao pozitivne nego sto je
+trebalo.
 
 ### 6.3.4 LightGBMClassifier
 
@@ -427,15 +406,7 @@ svih deset propisanih klasicnih TF-IDF klasifikatora. Pretraga je koristila:
 
 To znaci da je za svaku obitelj modela uzorkovano 5 kombinacija, a svaka
 kombinacija je ocijenjena kroz 3 folda. Za deset klasifikatora to daje 150 CV
-fitova plus zavrsni refit najboljeg modela na cijelom trening splitu. Ovo nije
-iscrpna optimizacija svih mogucih hiperparametara, nego namjerno ogranicena
-provjera zahtjeva i razumna usporedba modela unutar roka projekta.
-
-Artefakti pretrage spremljeni su u
-`outputs/searches/randomized_search_cv_required_n5_cv3/`. Globalni
-`summary.csv` i `summary.md` sadrze usporedbu svih modela, a svaki model ima
-vlastiti `search_results.csv`, `run_config.json`, metrike, matricu zabune i
-klasifikacijski izvjestaj.
+fitova plus zavrsni refit najboljeg modela na cijelom trening splitu.
 
 ![Slika 15. Koncept `RandomizedSearchCV` postupka: uzorkuje se vise kombinacija
 hiperparametara, svaka se ocjenjuje kroz foldove unakrsne validacije, a bira se
@@ -601,21 +572,18 @@ najbolji pojedinacni linearni model.
 
 Vazno je da ensemble nije automatski najbolji model. U ovom projektu najbolji
 pojedinacni klasicni model (`LinearSVC`) nadmasuje sve klasicne ensemble
-varijante. To nije kontradikcija zadatka: zadatak trazi da se ensemble slozi,
-ali rezultati pokazuju da za ovaj skup i ove postavke jednostavniji linearni
-model ostaje najbolji klasicni izbor.
+varijante.
 
 # 10. Dodatno istrazivanje: neuronski i transformerski modeli
 
 Nakon obaveznog TF-IDF dijela isproban je dodatni smjer: mali transformerski
-model od nule i fino ugadanje unaprijed naucenih modela. Ovaj dio nije zamjena
-za propisane klasifikatore. U izvjestaju je ukljucen zato sto pokazuje granicu
-klasicnih metoda i zato sto je analiza sentimenta danas cesto rjesavana
-unaprijed naucenim jezicnim modelima. Eksperimenti su vodeni kao mala
-istrazivacka iteracija: prvo se provjerava moze li vrlo mali transformer sam
-nauciti jezik zadatka, zatim se mijenjaju vokabular, pooling, scheduler i
-duljina konteksta, a na kraju se isti problem usporeduje s predtreniranim
-modelima.
+model od nule i fino ugadanje unaprijed naucenih modela. U izvjestaju je
+ukljucen zato sto pokazuje granicu klasicnih metoda i zato sto je analiza
+sentimenta danas cesto rjesavana unaprijed naucenim jezicnim modelima.
+Eksperimenti su vodeni kao mala istrazivacka iteracija: prvo se provjerava
+moze li vrlo mali transformer sam nauciti jezik zadatka, zatim se mijenjaju
+vokabular, pooling, scheduler i duljina konteksta, a na kraju se isti problem
+usporeduje s predtreniranim modelima.
 
 ## 10.1 Transformer treniran od nule
 
@@ -661,9 +629,7 @@ Zatim su fino ugodena dva unaprijed naucena modela:
 reprezentacije na velikim korpusima, a zatim se prilagodava IMDb oznakama
 sentimenta pomocu klasifikacijske glave.](figures/generated/pretrained_transformer_finetuning.png){width=95%}
 
-Treniranje je izvedeno na udaljenoj Vast.ai RTX 3090 instanci, ne na lokalnom
-Mac racunalu. To je vazno jer su transformerski eksperimenti racunalno znatno
-zahtjevniji od TF-IDF modela.
+Treniranje je izvedeno na udaljenoj Vast.ai RTX 3090 instanci.
 
 Kod fine-tuninga se vise ne uci jezicna reprezentacija od nule. Predtrenirani
 model vec ima naucene obrasce engleskog jezika, sintakse, konteksta i
@@ -749,8 +715,7 @@ racunanje metrika, rezultati ne bi bili izravno usporedivi.
 Za svaki eksperiment sprema se `run_config.json`. Ta datoteka je posebno vazna
 jer dokumentira sto je tocno pokrenuto: parametre TF-IDF vektorizatora, broj
 redaka, split, model i dostupnost probabilistickih izlaza. Brojcani rezultati u
-izvjestaju nisu pisani napamet, nego su preuzeti iz `metrics.json` i
-`confusion_matrix.json` artefakata.
+izvjestaju su preuzeti iz `metrics.json` i `confusion_matrix.json` artefakata.
 
 # 13. Analiza gresaka i moguci sljedeci koraci
 
@@ -868,9 +833,7 @@ za TF-IDF tekstualne znacajke dobro odabran linearni model vrlo jak baseline.
 
 Dodatni eksperimenti s transformerima pokazuju da moderno predtreniranje moze
 znatno poboljsati rezultat. `DeBERTa-v3-small` postize tocnost `0.9564`, sto je
-znatno vise od klasicnih TF-IDF modela. Ipak, za zahtjeve kolegija kljucan je
-klasicni TF-IDF dio, a transformerski dio treba citati kao dodatno
-istrazivanje.
+znatno vise od klasicnih TF-IDF modela.
 
 # Literatura i izvori
 
@@ -1016,7 +979,6 @@ Ova kontrolna lista sluzi kao zavrsna provjera uskladenosti s temom 7.
 | Zahtjev | Status u projektu | Dokaz |
 | --- | --- | --- |
 | Analiza sentimenta recenzija | ispunjeno | Kaggle IMDb recenzije, binarne oznake `positive`/`negative` |
-| Bez rucnog oznacavanja | ispunjeno | koriste se vec oznaceni javni skupovi |
 | TF-IDF prikaz | ispunjeno | `TfidfVectorizer` u klasicnim pipelineovima |
 | Najmanje 10 klasifikatora | ispunjeno | 10 propisanih obitelji modela |
 | RandomizedSearchCV | ispunjeno | svih 10 propisanih modela, `n_iter=5`, `cv=3` |
@@ -1033,60 +995,4 @@ Ova kontrolna lista sluzi kao zavrsna provjera uskladenosti s temom 7.
 
 Preostali kompromisi su namjerno navedeni u poglavlju ogranicenja: modeli nisu
 iscrpno optimirani, primarna evaluacija je jedan stratificirani Kaggle split, a
-nekalibrirani margin-based modeli nemaju log-loss. Ti kompromisi ne mijenjaju
-cinjenicu da su trazeni dijelovi projekta provedeni i dokumentirani.
-
-# Dodatak G: Kratki plan usmene prezentacije
-
-Prezentacija je zamisljena za 10-15 minuta. Cilj nije procitati cijeli
-izvjestaj, nego jasno pokazati da su ispunjeni zahtjevi teme 7 i da su rezultati
-dobiveni stvarnim eksperimentima.
-
-## G.1 Uvod i zadatak
-
-Prvi dio prezentacije treba u jednoj minuti reci sto je problem: binarna
-klasifikacija IMDb recenzija na pozitivan i negativan sentiment. Treba odmah
-naglasiti da nije bilo rucnog labeliranja i da su dataset izvori oni navedeni u
-materijalima kolegija. Time se zatvara moguce pitanje je li tema zahtijevala
-manualno oznacavanje podataka.
-
-## G.2 Podaci i TF-IDF pipeline
-
-Drugi dio treba objasniti 50 000 recenzija, stratificirani 80/20 split i
-cinjenicu da je testni skup uravnotezen s 5 000 pozitivnih i 5 000 negativnih
-recenzija. Kod TF-IDF-a treba reci da se vokabular uci iskljucivo na trening
-skupu i da testni podaci ne smiju utjecati na izbor znacajki. Vizualno je
-najbolje proci kroz tok: raw review, TF-IDF vokabular, sparse matrix,
-klasifikator, sentiment.
-
-## G.3 Modeli i metrika
-
-Treba kratko grupirati modele umjesto objasnjavati svih deset jednako dugo:
-Bayesovi modeli, linearni modeli, tree/bagging modeli i boosting modeli.
-Najvaznija poruka je da su linearni modeli najprirodniji za rijedak
-visokodimenzionalni TF-IDF prostor. Kod metrika treba naglasiti da nisu
-prikazani samo accuracy i F1, nego i ROC-AUC, PR-AUC, MCC, log-loss i matrice
-zabune.
-
-## G.4 Rezultati i ensemble
-
-Glavni rezultat obaveznog dijela je `LinearSVC` s tocnosti `0.9150`. Ensemble
-dio treba prikazati iskreno: soft voting, hard voting i prefit stacking su
-implementirani, ali ne nadmasuju najbolji pojedinacni linearni model. To nije
-neuspjeh, nego rezultat eksperimenta. Zadatak trazi da se ensemble slozi, a ne
-da on nuzno bude najbolji model.
-
-## G.5 Transformer prosirenje
-
-Transformer dio treba predstaviti kao dodatno istrazivanje. Mali transformer od
-nule ne pobjeduje TF-IDF linearni model, sto je vazan negativan rezultat.
-Predtrenirani modeli, posebno `DeBERTa-v3-small`, daju znatno bolji rezultat
-jer koriste transfer learning. Treba jasno reci da transformer ne zamjenjuje
-obavezni TF-IDF dio.
-
-## G.6 Zakljucak
-
-Zavrsna poruka: projekt ispunjava propisani TF-IDF dio, linearni modeli su
-najbolji za ovaj prikaz podataka, ensemble je implementiran, a predtrenirani
-transformeri pokazuju korist transfer learninga. Sljedeci koraci su kalibrirati
-`LinearSVC` i provjeriti rezultat na Stanford ACL IMDb skupu.
+nekalibrirani margin-based modeli nemaju log-loss.

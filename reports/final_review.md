@@ -32,7 +32,7 @@ cost points than to fail the submission.
 | --- | --- | --- |
 | Topic 7, sentiment analysis of reviews | pass | `AGENTS.md`; report section 2 |
 | Legit labelled datasets | pass | Kaggle IMDb 50K and Stanford ACL IMDB listed in report section 3 |
-| No manual labelling | pass | report sections 3 and summary explicitly state no manual labelling |
+| No manual labelling | pass | project summary states no manual labelling; dataset sources are already labelled public IMDb sources |
 | TF-IDF for required comparison | pass | report section 5; classical runner folders use `TfidfVectorizer` |
 | 10 required classifiers | pass | report section 6 includes all required families |
 | RandomizedSearchCV | pass | all 10 required classifiers, `n_iter=5`, `cv=3`; report section 7 |
@@ -42,7 +42,7 @@ cost points than to fail the submission.
 | Log-loss | pass with explanation | reported where `predict_proba` exists; n/a explained for uncalibrated margin models |
 | Confusion matrices | pass | report sections 8, 9, 10 |
 | Voting/Stacking final model | pass | soft voting, hard voting, and prefit stacking in report section 9 |
-| Required and optional work separated | pass | transformer work is section 10 and explicitly marked optional |
+| Required and optional work separated | pass | transformer work is section 10, after the required TF-IDF/classical sections |
 | Report accepted format | pass | `reports/final_report/analiza_sentimenta_recenzija.docx` |
 | Presentation accepted format | pass | `presentation/analiza_sentimenta_recenzija.pptx` |
 | Reproducibility instructions | pass | `README.md`; report section 14 and appendices |
@@ -51,14 +51,14 @@ cost points than to fail the submission.
 
 - Python source compilation: `python -m compileall src classifiers` passed.
 - DOCX render: `reports/final_report/analiza_sentimenta_recenzija.docx`
-  rendered successfully to 45 PNG pages.
-- Report source length after restructuring and transformer expansion: 7,297
+  rendered successfully to 43 PNG pages.
+- Report source length after targeted wording cleanup: 6,376
   words.
 - DOCX structure check: 20 embedded images, 20 centered image paragraphs,
   20 captions, 13 tables, and 13 bordered tables.
 - Revised visual QA: affected DOCX pages were inspected one by one, especially
   the dataset/metrics/TF-IDF pages, section 6 classifier-card pages, results
-  tables, transformer section, appendices, and final Appendix G page.
+  tables, transformer section, appendices, and final Appendix F checklist page.
 - Transformer tables were simplified into an experiment-progression table and a
   compact final-metrics table focused on trained scratch and fine-tuned models.
 - The ten detailed classifier cards now appear in the main body near the first
