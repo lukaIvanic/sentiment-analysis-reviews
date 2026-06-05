@@ -1,6 +1,6 @@
 # Final Strict Review
 
-Review date: 2026-06-04
+Review date: 2026-06-05
 
 Reviewer stance: hostile-but-fair professor. The goal of this review is not to
 be encouraging, but to decide whether the project is actually hand-in ready.
@@ -48,21 +48,24 @@ cost points than to fail the submission.
 | Required and optional work separated | pass | transformer work is section 10 and explicitly marked optional |
 | Report accepted format | pass | `reports/final_report/analiza_sentimenta_recenzija.docx` |
 | Presentation accepted format | pass | `presentation/analiza_sentimenta_recenzija.pptx` |
-| Reproducibility instructions | pass | `README.md`; report section 15 and appendices |
+| Reproducibility instructions | pass | `README.md`; report section 14 and appendices |
 
 ## Artifact Checks
 
 - Python source compilation: `python -m compileall src classifiers` passed.
 - DOCX render: `reports/final_report/analiza_sentimenta_recenzija.docx`
-  rendered successfully to 41 PNG pages.
-- Report source length after appendix expansion and visual guide: 9,348 words.
-- DOCX structure check: 23 embedded images, 23 centered image paragraphs,
-  23 captions, 13 tables, and 13 bordered tables.
+  rendered successfully to 45 PNG pages.
+- Report source length after restructuring: 6,950 words.
+- DOCX structure check: 20 embedded images, 20 centered image paragraphs,
+  20 captions, 13 tables, and 13 bordered tables.
 - Revised visual QA: affected DOCX pages were inspected one by one, especially
-  the TF-IDF/pipeline pages, transformer section, Appendix H classifier-card
-  pages, and final Appendix I pages. The dangling final-page orphan was fixed.
-- Appendix H includes one detailed image-generated card for each required
-  classifier family, rather than a single vague overview graphic.
+  the TF-IDF/pipeline pages, section 5 classifier-card pages, results tables,
+  transformer section, appendices, and final Appendix G page.
+- The ten detailed classifier cards now appear in the main body near the first
+  substantive explanation of each classifier/family. They are no longer
+  isolated in a large appendix.
+- The classical confusion-matrix table was re-rendered after forcing its
+  subsection to a fresh page; PDF text extraction confirms all rows render.
 - Generated explanatory infographics are tracked under `figures/generated/`
   and embedded in the DOCX.
 - Presentation: 12 slides, within the 10-20 slide guidance. The final PPTX was
@@ -88,6 +91,8 @@ This does not read like empty AI slop. The strongest evidence:
 
 - exact metrics are internally consistent across tables,
 - confusion matrices are present,
+- the ten classifier explanation graphics are in the main body rather than a
+  disconnected appendix,
 - model-specific limitations are explained rather than hidden,
 - log-loss is not faked for models without probabilities,
 - transformer results are separated from the required TF-IDF/classical work,

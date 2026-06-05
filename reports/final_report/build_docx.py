@@ -8,7 +8,6 @@ figure centering, table borders/geometry, paragraph rhythm, and report styles.
 from __future__ import annotations
 
 import argparse
-import re
 import shutil
 import subprocess
 import tempfile
@@ -29,9 +28,6 @@ DEFAULT_SOURCE = REPORT_DIR / "report.md"
 DEFAULT_OUTPUT = REPORT_DIR / "analiza_sentimenta_recenzija.docx"
 CONTENT_WIDTH_DXA = 9360
 TABLE_INDENT_DXA = 120
-APPENDIX_H_CARD_HEADING_RE = re.compile(r"^H\.(1|3|4|5|6|7|8|9|10|11)\b")
-
-
 def require_pandoc() -> str:
     pandoc = shutil.which("pandoc")
     if not pandoc:
@@ -158,7 +154,11 @@ def paragraph_has_drawing(paragraph) -> bool:
 
 def should_start_new_page(paragraph) -> bool:
     text = paragraph.text.strip()
-    return bool(APPENDIX_H_CARD_HEADING_RE.match(text)) or text.startswith("Dodatak I:")
+    starts = (
+        "8.1 Matrice zabune za klasicne modele",
+        "Dodatak G:",
+    )
+    return any(text.startswith(prefix) for prefix in starts)
 
 
 def polish_paragraphs(doc: Document) -> None:
@@ -189,7 +189,7 @@ def polish_paragraphs(doc: Document) -> None:
 
         if style_name.startswith("Heading"):
             pf.keep_with_next = True
-            if should_start_new_page(paragraph):
+            if style_name == "Heading 1" or should_start_new_page(paragraph):
                 pf.page_break_before = True
             continue
 

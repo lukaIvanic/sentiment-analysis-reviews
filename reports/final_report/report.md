@@ -179,21 +179,56 @@ vjerojatnosti rijeci, linearni modeli uce tezine i margine, tree ensemble modeli
 glasaju preko stabala, a boosting modeli dodaju stabla koja ispravljaju
 prethodne pogreske.](figures/generated/ten_classifiers_overview_generated.png){width=95%}
 
+Ovo poglavlje je strukturirano kao usporedni "model atlas": prvo se zadrzava
+isti TF-IDF prikaz, a zatim se mijenja algoritam ucenja. Takva struktura slijedi
+uobicajen nacin prikaza usporednih tekstualnih klasifikacijskih eksperimenata:
+opis zadatka i vektorizacije, zatim modeli po skupinama, pa zajednicke metrike i
+rezultati. Kao korisni vanjski orijentiri posluzili su scikit-learn primjer
+klasifikacije tekstnih dokumenata rijetkim TF-IDF znacajkama i noviji IMDb
+usporedni radovi koji odvajaju klasicne TF-IDF modele od neuronskih ili
+transformerskih prosirenja. Zbog toga su kartice modela ukljucene ovdje, u
+glavnom tekstu, umjesto da budu zakopane u dodatku.
+
 ## 5.1 Naivni Bayesovi modeli
+
+### 5.1.1 MultinomialNB
+
+![Slika 4. `MultinomialNB`: model uci vjerojatnosti rijeci po klasi, koristi
+alpha smoothing i predvida sentiment zbrajanjem log-vjerojatnosti za rijeci iz
+TF-IDF prikaza.](figures/generated/classifier_cards/multinomial_nb.png){width=95%}
 
 `MultinomialNB` i `ComplementNB` su varijante naivnog Bayesovog klasifikatora
 koje su cesto pogodne za tekst. Pretpostavljaju uvjetnu nezavisnost znacajki
 unutar klase. Ta pretpostavka nije doslovno tocna za prirodni jezik, ali modeli
 su brzi, stabilni i cesto vrlo jaki kao pocetni tekstualni baseline.
 
-`MultinomialNB` procjenjuje vjerojatnost znacajki po klasi. `ComplementNB`
-koristi informacije iz komplementa klase i obicno je robusniji kod
-neuravnotezenih skupova. U ovom projektu je skup gotovo savrseno uravnotezen,
-pa su rezultati ova dva modela prakticki identicni.
+`MultinomialNB` procjenjuje vjerojatnost znacajki po klasi i zatim za novu
+recenziju zbraja log-vjerojatnosti rijeci ili bigrama koje se pojavljuju u
+TF-IDF vektoru. Osnovni model postigao je tocnost `0.8841` i F1 `0.8846`.
+Rezultat je vrlo dobar s obzirom na jednostavnost modela. Nedostatak je to sto
+model ne uci odnose izmedu znacajki: rijeci i fraze se tretiraju kao uvjetno
+nezavisni signali.
 
-![Slika 4. Naivni Bayesovi modeli za tekst: model procjenjuje vjerojatnosti
-rijeci po klasi, koristi alpha smoothing da izbjegne nulte vjerojatnosti i
-odabire klasu s vecim zbrojem log-vjerojatnosti.](figures/generated/naive_bayes_text_sentiment.png){width=95%}
+Tuned `MultinomialNB` koristi `RandomizedSearchCV` s 10 iteracija i 3 folda.
+Njegova testna tocnost je `0.8854`, sto je malo poboljsanje, ali potvrduje da
+TF-IDF parametri i `alpha` smoothing utjecu na rezultat. Ipak, vece poboljsanje
+u projektu dolazi od prelaska na diskriminativne linearne modele.
+
+### 5.1.2 ComplementNB
+
+![Slika 5. `ComplementNB`: model procjenjuje znacajke iz komplementa klase, sto
+je cesto korisno kod neuravnotezenih tekstualnih skupova; na uravnotezenom IMDb
+splitu dao je isti rezultat kao `MultinomialNB`.](figures/generated/classifier_cards/complement_nb.png){width=95%}
+
+`ComplementNB` koristi informacije iz komplementa klase i cesto je robusniji kod
+neuravnotezenih tekstualnih skupova. U ovom projektu je skup gotovo savrseno
+uravnotezen, pa su rezultati prakticki identicni kao kod osnovnog
+`MultinomialNB`: tocnost `0.8841` i F1 `0.8846`.
+
+Ovaj rezultat ne znaci da je `ComplementNB` los model, nego da dataset ne
+naglasava njegovu glavnu prednost. Oba Bayesova modela zato sluze kao brzi,
+interpretabilni baseline: hvataju dosta sentiment signala iz samih rijeci, ali
+ne uce diskriminativnu granicu jednako dobro kao linearni modeli.
 
 ## 5.2 Linearni modeli
 
@@ -202,17 +237,71 @@ odabire klasu s vecim zbrojem log-vjerojatnosti.](figures/generated/naive_bayes_
 dimenzija je velik, ali je matrica vrlo rijetka. Linearni modeli su zato
 prirodan izbor jer se mogu ucinkovito trenirati nad velikim rijetkim vektorima.
 
-`LogisticRegression` uci linearnu granicu odluke i daje probabilisticke izlaze,
-sto omogucuje racunanje log-loss metrike. `LinearSVC` optimira SVM cilj s
-marginom. U praksi je cesto vrlo jak za klasifikaciju teksta. `SGDClassifier`
-omogucuje treniranje linearnog modela stohastickim gradijentnim postupkom; u
-ovom eksperimentu koristen je hinge loss, sto ga cini slicnim linearnom SVM-u.
-`PassiveAggressiveClassifier` radi online azuriranja i mijenja model uglavnom
-kad je trenutna klasifikacija pogresna ili nedovoljno sigurna.
+### 5.2.1 LogisticRegression
 
-![Slika 5. Linearni modeli dobro odgovaraju rijetkom TF-IDF prostoru: logisticka
-regresija daje vjerojatnosti, `LinearSVC` koristi marginu i hinge loss, a
-`SGDClassifier` skalabilno aproksimira slican linearni cilj.](figures/generated/linear_models_tfidf.png){width=95%}
+![Slika 6. `LogisticRegression`: diskriminativni linearni model uci tezine
+TF-IDF znacajki, pretvara linearni score u vjerojatnost sigmoidnom funkcijom i
+moze prirodno dati log-loss.](figures/generated/classifier_cards/logistic_regression.png){width=95%}
+
+`LogisticRegression` uci linearnu granicu odluke i daje probabilisticke izlaze.
+U projektu je postigla tocnost `0.9095` i F1 `0.9101`, sto je velik skok u
+odnosu na Bayesove modele. Razlog je diskriminativni cilj: model izravno uci
+tezine znacajki koje razdvajaju pozitivnu i negativnu klasu.
+
+Najvaznija prakticna prednost je `predict_proba`. Zato logisticka regresija
+daje log-loss, ROC-AUC i PR-AUC na standardan nacin. Ako bi sustav trebao
+vracati pouzdanu procjenu sigurnosti, logisticka regresija bi bila jedan od
+najboljih jednostavnih kandidata.
+
+### 5.2.2 LinearSVC
+
+![Slika 7. `LinearSVC`: linearni SVM trazi granicu odluke s velikom marginom u
+rijetkom TF-IDF prostoru, optimira hinge loss i daje `decision_function` umjesto
+kalibriranih vjerojatnosti.](figures/generated/classifier_cards/linear_svc.png){width=95%}
+
+`LinearSVC` optimira SVM cilj s marginom. To je najbolji obavezni klasicni model
+u projektu: tocnost `0.9150`, F1 `0.9152`, ROC-AUC `0.9720` i MCC `0.8300`.
+SVM pristup je posebno dobar za visokodimenzionalne rijetke prostore jer uci
+linearnu granicu koja ne samo da razdvaja klase, nego ih razdvaja s marginom.
+
+Nedostatak konfiguracije koristenje u projektu je izostanak kalibriranih
+vjerojatnosti. `LinearSVC` daje `decision_function`, sto je dovoljno za ROC-AUC
+i PR-AUC, ali ne i za standardni log-loss. Da je cilj produkcijski sustav s
+pouzdanim vjerojatnostima, mogla bi se dodati kalibracija, ali za propisanu
+usporedbu ovaj rezultat je najbolji klasicni baseline.
+
+### 5.2.3 SGDClassifier
+
+![Slika 8. `SGDClassifier`: linearni model treniran stohastickim gradijentnim
+postupkom; u projektu koristi hinge loss pa se ponasa slicno linearnom SVM-u,
+ali s iterativnim stochastic update koracima.](figures/generated/classifier_cards/sgd_classifier.png){width=95%}
+
+`SGDClassifier` omogucuje treniranje linearnog modela stohastickim gradijentnim
+postupkom. U ovom eksperimentu koristen je hinge loss, sto ga cini slicnim
+linearnom SVM-u. Postigao je tocnost `0.9111` i F1 `0.9117`, vrlo blizu
+`LinearSVC` rezultatu.
+
+Prednost `SGDClassifier` modela je skalabilnost. Kada bi skup imao milijune
+recenzija, stohasticko treniranje moglo bi biti prakticnije od drugih postupaka.
+U ovom projektu skup je dovoljno malen da `LinearSVC` radi bez problema, ali
+SGD rezultat potvrduje da problem dobro odgovara linearnom margin-based
+pristupu.
+
+### 5.2.4 PassiveAggressiveClassifier
+
+![Slika 9. `PassiveAggressiveClassifier`: online margin-based linearni model
+ostaje pasivan kada je primjer dobro klasificiran, a agresivno azurira tezine
+kada primjer krsi marginu.](figures/generated/classifier_cards/passive_aggressive.png){width=95%}
+
+`PassiveAggressiveClassifier` radi online azuriranja i mijenja model uglavnom
+kad je trenutna klasifikacija pogresna ili nedovoljno sigurna. Postigao je
+tocnost `0.9062`. Njegov naziv opisuje postupak ucenja: model ostaje "passive"
+kada je predikcija dobra, a "aggressive" kada treba ispraviti gresku.
+
+Na staticnom IMDb skupu rezultat je malo slabiji od `LinearSVC` i
+`SGDClassifier`, ali i dalje prelazi `0.90` tocnosti. Matrica zabune je gotovo
+uravnotezena, s 468 lazno pozitivnih i 470 lazno negativnih gresaka, pa model
+nema izrazitu pristranost prema jednoj klasi.
 
 ## 5.3 Stablima temeljeni ensemble modeli
 
@@ -221,14 +310,71 @@ odluke. Takvi modeli su vrlo korisni na tablicnim podacima, ali na rijetkim
 TF-IDF vektorima cesto nisu najbolji izbor. Imaju mnogo potencijalnih splitova
 i mogu biti sporiji ili manje ucinkoviti od linearnih modela.
 
+### 5.3.1 RandomForestClassifier
+
+![Slika 10. `RandomForestClassifier`: vise stabala trenira se na bootstrap
+uzorcima, svako stablo glasa, a konacna klasa dolazi iz vecinskog glasanja ili
+prosjeka vjerojatnosti.](figures/generated/classifier_cards/random_forest.png){width=95%}
+
+`RandomForestClassifier` je postigao tocnost `0.8633`, slabije od Bayesovih i
+linearnih modela. To je korisna lekcija: model koji je jak na tablicnim podacima
+ne mora biti najbolji za rijetke tekstualne znacajke. Stabla moraju birati
+splitove po pojedinim znacajkama, a TF-IDF prostor ima mnogo rijetkih stupaca.
+
+Signal sentimenta je rasprsen preko velikog broja rijeci i fraza, pa linearni
+model koji koristi sve znacajke odjednom bolje odgovara problemu. Random forest
+zato ostaje vazan dio propisane usporedbe, ali ne i glavni kandidat za najbolji
+rezultat.
+
+### 5.3.2 ExtraTreesClassifier
+
+![Slika 11. `ExtraTreesClassifier`: ansambl ekstremno randomiziranih stabala
+koristi dodatnu slucajnost u odabiru znacajki i pragova splitova, sto ga
+razlikuje od random foresta.](figures/generated/classifier_cards/extra_trees.png){width=95%}
+
+`ExtraTreesClassifier` je postigao tocnost `0.8749`, bolje od random foresta,
+ali i dalje slabije od linearnih modela. Veca randomizacija u splitovima i
+ansamblu ovdje pomaze, no ne mijenja osnovnu cinjenicu da stabla nisu prirodan
+prvi izbor za TF-IDF tekst.
+
+U usporedbi je ipak koristan jer pokazuje razliku izmedu dva slicna bagging
+pristupa. Extra Trees je bio bolji od Random Forest modela, ali oba ostaju
+ispod `MultinomialNB`, `LogisticRegression`, `SGDClassifier` i `LinearSVC`
+rezultata.
+
+### 5.3.3 XGBoostClassifier
+
+![Slika 12. `XGBoostClassifier`: gradient boosting gradi stabla sekvencijalno i
+svako novo stablo pokusava ispraviti preostale pogreske; na ovom rijetkom
+TF-IDF splitu model je imao najvise lazno pozitivnih pogresaka medu obaveznim
+modelima.](figures/generated/classifier_cards/xgboost_classifier.png){width=95%}
+
 `XGBoostClassifier` i `LightGBMClassifier` su gradient boosting modeli. Oni
 grade niz stabala gdje svako sljedece stablo pokusava ispraviti pogreske
 prethodnih. U ovom projektu su ukljuceni jer su izricito navedeni u zadatku i
 jer predstavljaju jaku skupinu modela za mnoge probleme strojnog ucenja.
 
-![Slika 6. Tree ensemble modeli nad TF-IDF znacajkama: random forest i extra
-trees grade mnoga stabla u paraleli, dok XGBoost i LightGBM grade sekvencu
-stabala koja ispravlja prethodne pogreske.](figures/generated/tree_ensembles_tfidf.png){width=95%}
+`XGBoostClassifier` je postigao tocnost `0.8509`, najslabiju medu obaveznim
+modelima. To ne znaci da je XGBoost opcenito slab algoritam. Ovdje je problem
+kombinacija boosting stabala i vrlo rijetkog tekstualnog prostora. Matrica
+zabune pokazuje 898 lazno pozitivnih predikcija, sto znaci da je model cesce
+oznacavao recenzije kao pozitivne nego sto je trebalo.
+
+### 5.3.4 LightGBMClassifier
+
+![Slika 13. `LightGBMClassifier`: LightGBM koristi ucinkovit histogram split
+search i leaf-wise rast stabala; bio je najbolji tree/boosting model u projektu,
+ali nije dostigao linearne TF-IDF modele po tocnosti.](figures/generated/classifier_cards/lightgbm_classifier.png){width=95%}
+
+`LightGBMClassifier` je najbolji stablima temeljeni model u projektu. Postigao
+je tocnost `0.8918`, F1 `0.8925` i log-loss `0.2617`. Po tocnosti ne dostize
+linearne modele, ali ima vrlo dobar probabilisticki izlaz u ovom eksperimentu.
+
+Zbog toga je LightGBM zanimljiv clan soft voting ensemblea. Iako nije najbolji
+po tvrdim labelama, njegove vjerojatnosti mogu biti korisne kada se prosjecuju s
+drugim probabilistickim modelima. To je dobar primjer zasto nije dovoljno
+gledati samo accuracy; razlicite metrike mogu naglasiti razlicite kvalitete
+modela.
 
 # 6. Validacija i pretraga hiperparametara
 
@@ -260,7 +406,7 @@ CV postupak su stvarno provedeni. Drugo, za ovaj konkretni skup najveci skok u
 performansama nije dosao od finog podesavanja Bayesovog modela, nego od izbora
 modela: linearni modeli nad istim TF-IDF znacajkama rade znatno bolje.
 
-![Slika 7. Koncept `RandomizedSearchCV` postupka: uzorkuje se vise kombinacija
+![Slika 14. Koncept `RandomizedSearchCV` postupka: uzorkuje se vise kombinacija
 hiperparametara, svaka se ocjenjuje kroz foldove unakrsne validacije, a bira se
 kombinacija s najboljim srednjim rezultatom.](figures/generated/randomized_search_cv.png){width=95%}
 
@@ -290,7 +436,7 @@ samo tvrdih predikcija dovelo bi do beskonacnih ili neinformativnih kazni, pa
 je u rezultatima oznaceno da log-loss nije dostupan za te modele. Za modele
 koji daju `predict_proba`, log-loss je izracunat.
 
-![Slika 8. Metrike za binarnu klasifikaciju sentimenta: matrica zabune definira
+![Slika 15. Metrike za binarnu klasifikaciju sentimenta: matrica zabune definira
 TN, FP, FN i TP, iz kojih se izvode accuracy, balanced accuracy, precision,
 recall, F1 i MCC; ROC-AUC/PR-AUC koriste rangiranje, a log-loss trazi
 probabilisticki izlaz.](figures/generated/evaluation_metrics.png){width=95%}
@@ -303,7 +449,7 @@ Ukljucen je i tuned `MultinomialNB` redak jer pokazuje rezultat
 prikazuje osnovne klasifikacijske metrike, a druga metrike koje ovise o
 rangiranju ili probabilistickim izlazima.
 
-![Slika 9. Sazetak najboljih rezultata na testnom skupu od 10 000 recenzija:
+![Slika 16. Sazetak najboljih rezultata na testnom skupu od 10 000 recenzija:
 najbolji klasicni model je `LinearSVC`, najbolji ensemble po tocnosti je hard
 voting, najbolji probabilisticki ensemble je soft voting, a najbolji dodatni
 transformer je `DeBERTa-v3-small`.](figures/generated/results_summary.png){width=95%}
@@ -377,7 +523,7 @@ pozitivnih i 416 lazno negativnih. Pogreske su relativno uravnotezene izmedu
 klasa, sto je u skladu s uravnotezenim testnim skupom i slicnim vrijednostima
 precision i recall metrika.
 
-![Slika 10. Usporedba broja pogresaka za najbolji klasicni model, najbolji
+![Slika 17. Usporedba broja pogresaka za najbolji klasicni model, najbolji
 ensemble po tocnosti i najbolji dodatni transformer. Slika pokazuje da
 transformer smanjuje ukupni broj pogresaka, ali ostaje oznacen kao dodatno
 prosirenje.](figures/generated/error_counts.png){width=95%}
@@ -398,7 +544,7 @@ vecinom glasova. On je malo bolji po tocnosti u ovom eksperimentu, ali nema
 standardni probabilisticki izlaz. Stacking uci dodatni meta-model nad izlazima
 baznih modela.
 
-![Slika 11. Usporedba ensemble arhitektura: soft voting prosjecuje
+![Slika 18. Usporedba ensemble arhitektura: soft voting prosjecuje
 vjerojatnosti, hard voting koristi vecinsko glasanje, a prefit stacking koristi
 spremljene bazne modele i cached meta-znacajke za meta-model.](figures/generated/ensemble_architectures_project.png){width=95%}
 
@@ -440,7 +586,7 @@ za propisane klasifikatore. U izvjestaju je ukljucen zato sto pokazuje granicu
 klasicnih metoda i zato sto je analiza sentimenta danas cesto rjesavana
 unaprijed naucenim jezicnim modelima.
 
-![Slika 12. Mali transformer treniran od nule: BPE vokabular od 10 000 tokena,
+![Slika 19. Mali transformer treniran od nule: BPE vokabular od 10 000 tokena,
 embedding dimenzija 24, cetiri transformer encoder sloja, mean pooling i
 klasifikacijska glava za pozitivan ili negativan sentiment.](figures/generated/tiny_transformer_from_scratch.png){width=95%}
 
@@ -456,7 +602,7 @@ Zatim su fino ugodena dva unaprijed naucena modela:
 - `distilbert-base-uncased`,
 - `microsoft/deberta-v3-small`.
 
-![Slika 13. Fine-tuning predtreniranog transformera: model prvo uci opce jezicne
+![Slika 20. Fine-tuning predtreniranog transformera: model prvo uci opce jezicne
 reprezentacije na velikim korpusima, a zatim se prilagodava IMDb oznakama
 sentimenta pomocu klasifikacijske glave.](figures/generated/pretrained_transformer_finetuning.png){width=95%}
 
@@ -519,158 +665,7 @@ ucenog od nule i modela s predtreniranjem. Mali transformer od nule ne uspijeva
 nadmasiti TF-IDF baseline, dok DeBERTa-v3-small znatno nadmasuje sve klasicne
 modele. Time se vidi vrijednost transfer learninga u obradi prirodnog jezika.
 
-# 12. Detaljna interpretacija pojedinacnih modela
-
-Ovo poglavlje prosiruje osnovnu tablicu rezultata. Cilj nije samo rangirati
-modele, nego objasniti zasto pojedine skupine modela daju takve rezultate na
-TF-IDF prikazu teksta.
-
-## 12.1 MultinomialNB
-
-Osnovni `MultinomialNB` postigao je tocnost `0.8841` i F1 `0.8846`.
-Matrica zabune pokazuje 601 lazno pozitivnu i 558 lazno negativnih predikcija.
-Model je vrlo brz i jednostavan, sto ga cini dobrim pocetnim baselineom.
-Njegova pretpostavka uvjetne nezavisnosti rijeci nije realna za prirodni
-jezik, ali u sentiment analizi i dalje radi dobro jer mnoge rijeci nose
-direktan sentiment signal. Primjeri takvih signala su rijeci i fraze koje
-tipicno opisuju kvalitetu filma, glumu, dosadu, napetost, humor ili razocaranje.
-
-Nedostatak ovog modela je to sto ne modelira odnose izmedu znacajki. Fraze i
-kontekst mogu promijeniti znacenje rijeci, a naivni Bayes to vidi samo kroz
-pojedinacne znacajke i njihove frekvencije. Ukljucivanje bigrama donekle
-smanjuje taj problem jer model vidi neke parove rijeci, ali i dalje nema pravo
-razumijevanje recenice.
-
-## 12.2 Tuned MultinomialNB
-
-Tuned `MultinomialNB` koristi `RandomizedSearchCV` s 10 iteracija i 3 folda.
-Njegova testna tocnost je `0.8854`, sto je poboljsanje od `0.0013` u odnosu na
-osnovni model. Poboljsanje je malo, ali je korisno jer potvrduje da promjena
-TF-IDF parametara i `alpha` parametra moze utjecati na rezultat.
-
-Najbolji parametri koriste `alpha=0.5`, `max_df=0.9`, `min_df=3` i
-`max_features=80000`. To znaci da tuned model dopusta veci vokabular od osnovne
-konfiguracije, ali istovremeno stroze uklanja vrlo rijetke i vrlo ceste izraze.
-Prakticno, to je razuman kompromis: zadrzava vise potencijalno korisnih
-sentiment fraza, ali smanjuje sum iz rijeci koje se pojavljuju prerijetko.
-
-## 12.3 ComplementNB
-
-`ComplementNB` je dao isti rezultat kao osnovni `MultinomialNB`: tocnost
-`0.8841` i F1 `0.8846`. To je zanimljivo jer se `ComplementNB` cesto koristi
-kod neuravnotezenih tekstualnih skupova. U ovom projektu testni i trening skup
-su uravnotezeni, pa njegova glavna prednost ne dolazi do izrazaja.
-
-Ovaj rezultat nije znak da je model pogresno implementiran. Naprotiv, on
-pokazuje da se kod uravnotezenog sentiment skupa oba Bayesova pristupa
-ponasaju vrlo slicno. Da je skup imao puno vise pozitivnih nego negativnih
-recenzija, ili obrnuto, razlika bi mogla biti veca.
-
-## 12.4 LogisticRegression
-
-`LogisticRegression` postize tocnost `0.9095` i F1 `0.9101`. To je veliki skok
-u odnosu na Bayesove modele. Glavni razlog je to sto logisticka regresija
-izravno uci tezine znacajki tako da razdvaja klase, umjesto da koristi
-jednostavnu generativnu pretpostavku o distribuciji rijeci.
-
-Prednost logisticke regresije je i to sto daje `predict_proba`, pa se mogu
-racunati log-loss, ROC-AUC i PR-AUC na prirodan nacin. Log-loss `0.2707` je
-dobar, iako ga soft voting dodatno poboljsava na `0.2654`. U praksi bi
-logisticka regresija bila vrlo dobar izbor ako je uz tvrd label potreban i
-razumno interpretabilan probabilisticki izlaz.
-
-## 12.5 LinearSVC
-
-`LinearSVC` je najbolji klasicni model u projektu. Postize tocnost `0.9150`,
-F1 `0.9152`, ROC-AUC `0.9720` i MCC `0.8300`. Rezultat je bolji od logisticke
-regresije i od ensemble modela.
-
-SVM pristup s marginom je posebno dobar za visokodimenzionalne rijetke
-prostore. TF-IDF vektor ima mnogo znacajki, ali vecina ih je nula za pojedini
-dokument. Linearni SVM moze uciti tezine nad tim prostorom i traziti granicu
-koja ne samo da razdvaja klase, nego ih razdvaja s marginom. U sentiment
-analizi to cesto daje vrlo stabilan rezultat.
-
-Nedostatak konfiguracije koristenje u projektu je izostanak kalibriranih
-vjerojatnosti. `LinearSVC` daje `decision_function`, sto je dovoljno za ROC-AUC
-i PR-AUC, ali ne i za standardni log-loss. Zato je log-loss oznacen kao
-n/a. Da je cilj produkcijski sustav s pouzdanim vjerojatnostima, moglo bi se
-koristiti `CalibratedClassifierCV`, ali to bi bio dodatni model povrh
-propisane konfiguracije.
-
-## 12.6 SGDClassifier
-
-`SGDClassifier` s hinge loss funkcijom postize tocnost `0.9111`, sto je vrlo
-blizu `LinearSVC` rezultatu. To nije slucajno: hinge loss i linearna granica
-odluke cine ovaj model slicnim linearnom SVM-u, ali se optimizacija izvodi
-stohastickim gradijentnim postupkom.
-
-Prednost `SGDClassifier` modela je skalabilnost. Kada bi skup imao milijune
-recenzija, stohasticko treniranje moglo bi biti prakticnije od drugih postupaka.
-U ovom projektu skup je dovoljno malen da `LinearSVC` radi bez problema, ali
-rezultat `SGDClassifier` modela pokazuje da online/iterativni pristup takoder
-dobro odgovara TF-IDF tekstu.
-
-## 12.7 PassiveAggressiveClassifier
-
-`PassiveAggressiveClassifier` postize tocnost `0.9062`. Njegov naziv opisuje
-nacin azuriranja: model je "passive" kada je predikcija dobra, a "aggressive"
-kada treba ispraviti gresku. To ga cini prirodnim za scenarije u kojima podaci
-stizu u toku.
-
-Na ovom statickom IMDb skupu model je malo slabiji od `LinearSVC` i
-`SGDClassifier`, ali i dalje vrlo jak. Matrica zabune je uravnotezena: 468
-lazno pozitivnih i 470 lazno negativnih. To pokazuje da model ne preferira
-jednu klasu na ocit nacin.
-
-## 12.8 RandomForestClassifier
-
-`RandomForestClassifier` postize tocnost `0.8633`, slabije od vecine linearnih
-modela. Random forest je snazan tablicni model, ali TF-IDF prostor nije idealan
-za njega. Stabla odluke biraju splitove po pojedinim znacajkama, a kod teksta
-ima mnogo rijetkih znacajki koje su prisutne samo u malom broju dokumenata.
-
-Matrica zabune pokazuje 656 lazno pozitivnih i 711 lazno negativnih predikcija,
-sto je vise pogresaka nego kod linearnih modela. To sugerira da random forest
-ne uspijeva jednako dobro iskoristiti globalni linearni signal koji TF-IDF
-znacajke nose.
-
-## 12.9 ExtraTreesClassifier
-
-`ExtraTreesClassifier` je bolji od random foresta, s tocnosti `0.8749`, ali i
-dalje zaostaje za linearnim modelima i LightGBM-om. Extra Trees uvodi vise
-randomizacije u odabir splitova. To moze smanjiti varijancu i ubrzati
-treniranje, ali ne mijenja osnovni problem: rijetki tekstualni vektori nisu
-najprirodniji oblik podataka za stabla.
-
-Usporedba random foresta i extra trees modela pokazuje da vise randomizacije
-ovdje pomaze, ali ne dovoljno da se nadmasi linearna hiperravnina u TF-IDF
-prostoru.
-
-## 12.10 XGBoostClassifier
-
-`XGBoostClassifier` postize tocnost `0.8509`, najslabiju medu obaveznim
-modelima. To ne znaci da je XGBoost opcenito slab model. XGBoost je iznimno jak
-na mnogim tablicnim problemima, ali ovdje radi nad vrlo visokodimenzionalnim
-rijetkim TF-IDF vektorima.
-
-Matrica zabune pokazuje 898 lazno pozitivnih predikcija, sto je znatno vise
-nego kod najboljih linearnih modela. Model je imao relativno dobar recall
-pozitivne klase (`0.8814`), ali precision je nizi (`0.8307`). Drugim rijecima,
-cesce je predvidao pozitivan sentiment nego sto je trebalo.
-
-## 12.11 LightGBMClassifier
-
-`LightGBMClassifier` je najbolji od boosting/tree modela u projektu. Postize
-tocnost `0.8918`, F1 `0.8925` i najbolji log-loss medu klasicnim modelima koji
-daju vjerojatnosti (`0.2617`). Iako ne pobjeduje linearne modele po tocnosti,
-njegove probabilisticke predikcije su relativno dobre.
-
-Ovaj rezultat je zanimljiv jer pokazuje da tree boosting nije potpuno
-neprikladan za tekstualni TF-IDF prikaz. Ipak, za ovaj zadatak najbolji omjer
-jednostavnosti, brzine i tocnosti imaju linearni modeli.
-
-# 13. Implementacijska organizacija
+# 12. Implementacijska organizacija
 
 Projekt nije raden kao notebook-first projekt, nego kao Python workflow. To je
 namjerno, jer je lakse pratiti svaki model kao zaseban eksperiment i ponovno
@@ -696,7 +691,7 @@ redaka, split, model i dostupnost probabilistickih izlaza. Brojcani rezultati u
 izvjestaju nisu pisani napamet, nego su preuzeti iz `metrics.json` i
 `confusion_matrix.json` artefakata.
 
-# 14. Analiza gresaka i moguci sljedeci koraci
+# 13. Analiza gresaka i moguci sljedeci koraci
 
 Ovaj projekt ne ukljucuje duboku kvalitativnu analizu pojedinacnih pogresno
 klasificiranih recenzija, ali se iz matrica zabune mogu izvuci korisni
@@ -731,7 +726,7 @@ Moguci nastavci projekta bili bi:
 - interpretacija znacajki za linearne modele,
 - analiza pogresno klasificiranih primjera.
 
-# 15. Reproducibilnost
+# 14. Reproducibilnost
 
 Projekt je organiziran kao Python repozitorij. Glavni kod je u mapama:
 
@@ -775,7 +770,7 @@ Transformerski eksperimenti su racunalno zahtjevniji i nisu potrebni za osnovno
 pokretanje projekta. Pokretani su na GPU instanci, a rezultati su prepisani u
 izvjestaj.
 
-# 16. Ogranicenja
+# 15. Ogranicenja
 
 Glavno ogranicenje projekta je to sto je primarna evaluacija napravljena na
 jednom splitu Kaggle IMDb skupa. Iako je split stratificiran i velik, dodatna
@@ -795,7 +790,7 @@ da nije dostupna. Alternativa bi bila kalibracija modela pomocu
 `CalibratedClassifierCV`, ali to bi promijenilo modele i dodalo jos jedan sloj
 treniranja.
 
-# 17. Zakljucak
+# 16. Zakljucak
 
 Projekt ispunjava osnovne zahtjeve teme 7: koristi IMDb recenzije, TF-IDF
 prikaz, deset propisanih klasifikatora, `RandomizedSearchCV` s unakrsnom
@@ -820,6 +815,13 @@ istrazivanje.
 - Stanford AI Lab: IMDb Large Movie Review Dataset.
 - scikit-learn dokumentacija za `TfidfVectorizer`, linearne modele, naive Bayes
   modele, ensemble modele i metrike.
+- scikit-learn example: "Classification of text documents using sparse
+  features", koristan kao struktura za usporedbu vise klasifikatora nad istim
+  tekstualnim vektorskim prikazom.
+- Banerjee et al. (2026): "From TF-IDF to Transformers: A Comparative Study of
+  Sentiment Analysis Methods in Python", arXiv:2605.07811.
+- "From Machine Learning to Deep Learning: Enhancing IMDb Movie Review
+  Sentiment Analysis" (2026), arXiv:2605.22003.
 - XGBoost dokumentacija.
 - LightGBM dokumentacija.
 - Hugging Face Transformers dokumentacija za DistilBERT i DeBERTa modele.
@@ -968,363 +970,13 @@ svaki model, primarna evaluacija je jedan stratificirani Kaggle split, a
 nekalibrirani margin-based modeli nemaju log-loss. Ti kompromisi ne mijenjaju
 cinjenicu da su trazeni dijelovi projekta provedeni i dokumentirani.
 
-# Dodatak G: Vizualni vodic kroz metode
-
-Ovaj dodatak ukratko objasnjava kako citati vizualne prikaze u izvjestaju. Slike
-nisu zamjena za brojcane rezultate, nego pomoc za razumijevanje toka podataka,
-modela i metrika. U usmenoj obrani projekta ove slike mogu sluziti kao kratki
-podsjetnik za objasnjenje svakog dijela sustava.
-
-## G.1 Tok podataka
-
-Slika 1 prikazuje cijeli projekt na najvisoj razini. Lijevo su sirove recenzije,
-a zatim slijedi train/test split. To je vazno jer se sve odluke koje se uce iz
-podataka moraju uciti samo iz trening dijela. Ako bi se vokabular ili parametri
-normalizacije ucili iz cijelog skupa, testni skup bi neizravno utjecao na
-treniranje i rezultat bi bio optimisticniji nego sto treba.
-
-Srednji dio slike prikazuje TF-IDF vokabular i rijetku matricu. Jedan redak
-matrice odgovara jednoj recenziji, a jedan stupac jednoj rijeci ili bigramu iz
-vokabulara. Vecina vrijednosti je nula jer jedna recenzija sadrzi samo mali dio
-svih rijeci i fraza iz cijelog korpusa. Desna strana slike prikazuje
-klasifikator i izlaz `positive` ili `negative`.
-
-## G.2 TF-IDF konstrukcija
-
-Slika 2 detaljnije razlaze ono sto se dogada u `TfidfVectorizer` koraku. Prvo
-se tekst tokenizira, zatim se iz trening dokumenata gradi vokabular, a onda se
-za svaki dokument racuna koliko su pojedini izrazi vazni. U ovom projektu
-vokabular ukljucuje unigram i bigram znacajke, pa model moze vidjeti i pojedine
-rijeci i kratke fraze.
-
-TF dio mjeri lokalnu vaznost izraza unutar dokumenta. IDF dio smanjuje vaznost
-izraza koji se pojavljuju u mnogim dokumentima. Time se smanjuje utjecaj opcih
-rijeci i fraza koje se pojavljuju gotovo svugdje. Rezultat nije obicna
-few-hot reprezentacija, nego ponderirani rijetki vektor u kojem neke znacajke
-imaju vecu tezinu od drugih.
-
-## G.3 Pregled klasifikatora
-
-Slika 3 daje mapu deset propisanih klasifikatora. Ona nije zamjena za detaljne
-kartice u Dodatku H, nego brzi pregled skupina: Bayesovi modeli, linearni
-modeli, tree ensemble modeli i boosting modeli. Time se odmah vidi da su svi
-obavezni modeli usporedivani nad istim TF-IDF prikazom, a mijenja se algoritam
-ucenja.
-
-## G.4 Naivni Bayes
-
-Slika 4 prikazuje intuiciju za `MultinomialNB` i `ComplementNB`. Model broji
-koliko se rijeci pojavljuju u dokumentima pojedine klase i iz toga procjenjuje
-vjerojatnost rijeci pod uvjetom klase. Kada dode nova recenzija, model zbraja
-log-vjerojatnosti rijeci za pozitivnu i negativnu klasu te bira klasu s vecim
-zbrojem.
-
-Alpha smoothing je posebno vazan za tekst. Bez njega bi rijec koja se nikada
-nije pojavila u jednoj klasi imala vjerojatnost nula, a cijeli umnozak
-vjerojatnosti za tu klasu postao bi nula. Smoothing dodaje malu vrijednost
-brojevima pojavljivanja i time izbjegava nulte vjerojatnosti. To ne cini model
-slozenim, ali ga cini numericki stabilnim.
-
-## G.5 Linearni modeli
-
-Slika 5 objasnjava zasto su `LinearSVC`, `SGDClassifier` i `LogisticRegression`
-bili jaki u rezultatima. TF-IDF prostor ima mnogo dimenzija, ali su vektori
-rijetki. U takvom prostoru cesto postoji dobra linearna granica koja razdvaja
-pozitivne i negativne dokumente. Linearni modeli mogu iskoristiti veliki broj
-slabih signala odjednom.
-
-Razlika izmedu logisticke regresije i linearnog SVM pristupa je u cilju
-optimizacije. Logisticka regresija uci vjerojatnosti preko sigmoidne funkcije,
-pa prirodno daje `predict_proba`. `LinearSVC` optimira marginu i hinge loss.
-Zato daje vrlo dobru granicu odluke, ali ne daje kalibrirane vjerojatnosti bez
-dodatne kalibracije. `SGDClassifier` s hinge loss funkcijom uci slicnu linearnu
-granicu stohastickim postupkom.
-
-## G.6 Stablima temeljeni modeli
-
-Slika 6 dijeli tree modele na dvije skupine. `RandomForestClassifier` i
-`ExtraTreesClassifier` grade mnogo stabala u paraleli i spajaju njihove odluke.
-`XGBoostClassifier` i `LightGBMClassifier` grade stabla sekvencijalno, pri cemu
-svako novo stablo pokusava ispraviti pogreske prethodnih.
-
-Kod tablicnih podataka takvi modeli su cesto iznimno jaki. Na TF-IDF tekstu
-rezultati su slabiji jer je prostor vrlo visokodimenzionalan i rijedak. Jedno
-stablo mora birati splitove po pojedinim znacajkama, a mnoge tekstualne
-znacajke pojavljuju se u malom broju dokumenata. Linearni modeli zato ovdje
-imaju prednost: mogu izravno koristiti velik broj rijetkih znacajki bez
-gradnje hijerarhije splitova.
-
-## G.7 RandomizedSearchCV i cross-validation
-
-Slika 7 prikazuje kako je proveden zahtjev za `RandomizedSearchCV`. Umjesto da
-se isproba svaka moguca kombinacija hiperparametara, random search uzorkuje
-odredeni broj kombinacija. U ovom projektu za tuned `MultinomialNB` koristen je
-`n_iter=10`, sto znaci deset uzorkovanih konfiguracija.
-
-Za svaku konfiguraciju provodi se `cv=3` unakrsna validacija. Trening skup se
-dijeli na tri folda, model se trenira na dva folda i validira na trecem, a
-postupak se rotira. Srednji F1 preko foldova koristi se za izbor najbolje
-konfiguracije. Nakon izbora, najbolja konfiguracija se evaluira na izdvojenom
-testnom skupu koji nije sudjelovao u izboru hiperparametara.
-
-## G.8 Metrike
-
-Slika 8 povezuje sve metrike s matricom zabune. Accuracy je jednostavna, ali
-nije dovoljna sama za sebe. Balanced accuracy je korisna kada klase nisu
-uravnotezene, precision govori koliko su pozitivne predikcije pouzdane, recall
-govori koliko je stvarnih pozitivnih primjera pronadeno, a F1 kombinira
-precision i recall.
-
-ROC-AUC i PR-AUC nisu samo metrike tvrdih labela, nego koriste rangiranje ili
-score modela. MCC daje jednu korelacijsku mjeru kvalitete binarne
-klasifikacije. Log-loss je poseban jer zahtijeva vjerojatnosti, ne samo klasu
-ili rangirajuci score. Zato se u izvjestaju log-loss ne prikazuje za
-`LinearSVC`, hinge `SGDClassifier`, `PassiveAggressiveClassifier` i hard voting.
-
-## G.9 Sazetak rezultata
-
-Slika 9 naglasava najvaznije rezultate bez skrivanja konteksta. `LinearSVC` je
-najbolji klasicni TF-IDF model i zato je glavni rezultat obaveznog dijela.
-Hard voting je najbolji ensemble po tocnosti, ali je slabiji od `LinearSVC`.
-Soft voting je vazan jer daje probabilisticki izlaz i najbolji log-loss medu
-ensemble modelima.
-
-`DeBERTa-v3-small` je najbolji ukupni model, ali je prikazan kao dodatno
-istrazivanje. To razlikovanje je vazno u izvjestaju i prezentaciji. Projekt ne
-smije zamijeniti propisani TF-IDF dio transformerom, nego transformer koristi
-kao dodatno pitanje: koliko bolje radi moderni predtrenirani model na istom
-zadatku.
-
-## G.10 Pogreske i matrice zabune
-
-Slika 10 prikazuje konkretne pogreske. `LinearSVC` ima 850 pogresaka na 10 000
-testnih recenzija. Hard voting ima 893 pogreske, pa je slabiji od najboljeg
-pojedinacnog linearnog modela. `DeBERTa-v3-small` ima 436 pogresaka, sto je
-otprilike upola manje od `LinearSVC`.
-
-Ova usporedba je korisna jer tocnost ponekad skriva stvaran broj gresaka.
-Razlika izmedu tocnosti `0.9150` i `0.9564` zvuci kao nekoliko postotnih
-bodova, ali na 10 000 primjera to znaci 414 manje pogresno klasificiranih
-recenzija. Matrica zabune dodatno pokazuje jesu li pogreske vise lazno
-pozitivne ili lazno negativne.
-
-## G.11 Ensemble arhitekture
-
-Slika 11 prikazuje tri ensemble pristupa. Soft voting prosjecuje vjerojatnosti
-baznih modela. To je cist probabilisticki pristup, ali zahtijeva da clanovi
-imaju `predict_proba`. Hard voting koristi vecinsko glasanje i moze ukljuciti
-modele bez vjerojatnosti, ali zato nema standardni log-loss.
-
-Prefit stacking je u ovom projektu izveden tako da koristi spremljene bazne
-modele i cached meta-znacajke. Meta-model je logisticka regresija. Takav
-pristup je praktican jer ne mora svaki put ponovno trenirati sve bazne modele,
-ali je u izvjestaju jasno oznacen kao prefit/cached stacking. Strozi
-out-of-fold stacking bio bi metodoloski cistiji, ali i skuplji za treniranje.
-
-## G.12 Transformerski modeli
-
-Slike 12 i 13 pokazuju dva razlicita transformerska pristupa. Slika 12 prikazuje
-mali transformer treniran od nule: koristi BPE vokabular naucen na trening
-tekstu, male embeddinge, nekoliko encoder slojeva, mean pooling i jednostavnu
-klasifikacijsku glavu. Takav model nema jezicno predznanje i zato mora iz
-40 000 trening recenzija nauciti i reprezentaciju jezika i sentiment zadatak.
-
-Slika 13 pokazuje zasto predtrenirani transformer radi bolje od malog
-transformera treniranog od nule. Predtrenirani model prije fine-tuninga vec ima
-jezicne reprezentacije naucene na velikim korpusima. Fine-tuning zatim
-prilagodava te reprezentacije konkretnom zadatku IMDb sentimenta.
-
-U ovom projektu taj efekt je jasan. Mali transformer od nule ne nadmasuje
-klasicne TF-IDF linearne modele. `DistilBERT` i `DeBERTa-v3-small`, koji imaju
-predtreniran jezik, znatno su bolji. To nije samo pobjeda arhitekture, nego
-pobjeda transfer learninga: model ne uci engleski jezik iz 40 000 recenzija,
-nego vec zna mnogo jezicnih obrazaca i samo se prilagodava sentiment oznakama.
-
-# Dodatak H: Kartice obaveznih modela
-
-Ovaj dodatak daje kratke kartice za obavezne modele. Kartice nisu novi
-eksperimenti, nego sazetak uloge svakog modela u usporedbi.
-
-## H.1 MultinomialNB
-
-![Kartica H.1. `MultinomialNB`: model uci vjerojatnosti rijeci po klasi,
-koristi alpha smoothing i predvida sentiment zbrajanjem log-vjerojatnosti za
-rijeci iz TF-IDF prikaza.](figures/generated/classifier_cards/multinomial_nb.png){width=95%}
-
-`MultinomialNB` je najjednostavniji tekstualni baseline u projektu. Njegova
-uloga je provjeriti koliko se sentiment moze uhvatiti samo brojanjem rijeci i
-fraza po klasama. Postigao je tocnost `0.8841`, sto je vrlo dobar rezultat s
-obzirom na jednostavnost modela.
-
-Glavna prednost modela je brzina i jasna interpretacija. Glavni nedostatak je
-pretpostavka uvjetne nezavisnosti znacajki. Recenzije nisu stvarno skup
-nezavisnih rijeci, ali za sentiment se dovoljno signala nalazi u rijecima poput
-`great`, `boring`, `excellent`, `terrible` i slicnim frazama.
-
-## H.2 Tuned MultinomialNB
-
-Tuned `MultinomialNB` je model kojim je zadovoljen i dokumentiran zahtjev
-`RandomizedSearchCV` i unakrsne validacije. Pretraga je koristila 10 uzoraka
-hiperparametara i 3-fold CV. Najbolji srednji CV F1 bio je `0.8850`, a testna
-tocnost `0.8854`.
-
-Poboljsanje je malo, ali korisno. Pokazuje da TF-IDF parametri i `alpha`
-smoothing utjecu na rezultat, no i da je za ovaj dataset vazniji izbor modela
-nego fino podesavanje Bayesovog baselinea. Tunirani Bayes ostaje iza linearnih
-modela.
-
-## H.3 ComplementNB
-
-![Kartica H.3. `ComplementNB`: model procjenjuje znacajke iz komplementa klase,
-sto je cesto korisno kod neuravnotezenih tekstualnih skupova; na uravnotezenom
-IMDb splitu dao je isti rezultat kao `MultinomialNB`.](figures/generated/classifier_cards/complement_nb.png){width=95%}
-
-`ComplementNB` koristi informacije iz komplementa klase. Cesto je koristan kod
-neuravnotezenih tekstualnih skupova, jer uci iz onoga sto klasa nije. U ovom
-projektu skup je uravnotezen, pa je rezultat prakticki isti kao kod
-`MultinomialNB`: tocnost `0.8841` i F1 `0.8846`.
-
-Ovaj rezultat je razuman. Model nije pogresan zato sto nije drugaciji, nego
-dataset ne naglasava njegovu glavnu prednost. U obrani se moze reci da su oba
-Bayesova modela jaka kao brzi baseline, ali ne hvataju diskriminativnu granicu
-jednako dobro kao linearni modeli.
-
-## H.4 LogisticRegression
-
-![Kartica H.4. `LogisticRegression`: diskriminativni linearni model uci tezine
-TF-IDF znacajki, pretvara linearni score u vjerojatnost sigmoidnom funkcijom i
-moze prirodno dati log-loss.](figures/generated/classifier_cards/logistic_regression.png){width=95%}
-
-`LogisticRegression` je prvi jak diskriminativni linearni model u projektu.
-Postigao je tocnost `0.9095` i F1 `0.9101`. To je veliki skok u odnosu na
-Bayesove modele. Model uci tezine znacajki izravno za razlikovanje klasa,
-umjesto da procjenjuje distribuciju rijeci po klasi.
-
-Najvaznija prakticna prednost je `predict_proba`. Zato logisticka regresija
-daje log-loss, ROC-AUC i PR-AUC na standardan nacin. Ako bi sustav trebao
-vracati pouzdanu procjenu sigurnosti, logisticka regresija bi bila jedan od
-najboljih jednostavnih kandidata.
-
-## H.5 LinearSVC
-
-![Kartica H.5. `LinearSVC`: linearni SVM trazi granicu odluke s velikom
-marginom u rijetkom TF-IDF prostoru, optimira hinge loss i daje
-`decision_function` umjesto kalibriranih vjerojatnosti.](figures/generated/classifier_cards/linear_svc.png){width=95%}
-
-`LinearSVC` je najbolji obavezni klasicni model. Postigao je tocnost `0.9150`,
-F1 `0.9152`, ROC-AUC `0.9720` i MCC `0.8300`. Razlog je dobra uskladenost SVM
-margin-based cilja s visokodimenzionalnim rijetkim TF-IDF prostorom.
-
-Njegov nedostatak je izostanak kalibriranih vjerojatnosti. `decision_function`
-je dovoljan za rangirajuce metrike, ali nije isto sto i vjerojatnost klase.
-Zato log-loss nije prikazan. Da je cilj produkcijski probabilisticki sustav,
-trebalo bi dodati kalibraciju, ali za obaveznu usporedbu ovaj rezultat je
-najbolji klasicni baseline.
-
-## H.6 SGDClassifier
-
-![Kartica H.6. `SGDClassifier`: linearni model treniran stohastickim gradijentnim
-postupkom; u projektu koristi hinge loss pa se ponasa slicno linearnom SVM-u,
-ali s iterativnim stochastic update koracima.](figures/generated/classifier_cards/sgd_classifier.png){width=95%}
-
-`SGDClassifier` s hinge loss funkcijom postigao je tocnost `0.9111` i F1
-`0.9117`. Po ponasanju je blizak linearnom SVM-u, ali koristi stohasticki
-gradijentni postupak. Zbog toga je dobar primjer skalabilnijeg nacina ucenja
-linearne granice.
-
-Rezultat je vrlo blizu `LinearSVC`, sto potvrduje da problem dobro odgovara
-linearnom margin-based pristupu. U vecim datasetima SGD pristup bi mogao biti
-prakticniji jer se moze uciti u iteracijama i ne mora jednako skupo optimirati
-cijeli problem odjednom.
-
-## H.7 PassiveAggressiveClassifier
-
-![Kartica H.7. `PassiveAggressiveClassifier`: online margin-based linearni model
-ostaje pasivan kada je primjer dobro klasificiran, a agresivno azurira tezine
-kada primjer krsi marginu.](figures/generated/classifier_cards/passive_aggressive.png){width=95%}
-
-`PassiveAggressiveClassifier` postigao je tocnost `0.9062`. Model je zanimljiv
-jer azurira tezine agresivno kada primjer krsi marginu, a pasivan je kada je
-trenutna predikcija dovoljno dobra. To ga cini prirodnim za online ucenje i
-tokove podataka.
-
-Na statickom IMDb skupu rezultat je malo slabiji od `LinearSVC` i
-`SGDClassifier`, ali i dalje prelazi `0.90` tocnosti. Matrica zabune je
-uravnotezena, pa model nema izrazitu pristranost prema pozitivnoj ili negativnoj
-klasi. Kao dio usporedbe pokazuje jos jednu varijantu linearnog margin-based
-ucenja.
-
-## H.8 RandomForestClassifier
-
-![Kartica H.8. `RandomForestClassifier`: vise stabala trenira se na bootstrap
-uzorcima, svako stablo glasa, a konacna klasa dolazi iz vecinskog glasanja ili
-prosjeka vjerojatnosti.](figures/generated/classifier_cards/random_forest.png){width=95%}
-
-`RandomForestClassifier` je postigao tocnost `0.8633`, sto je slabije od
-Bayesovih i linearnih modela. To je dobra lekcija: model koji je jak na
-tablicnim podacima ne mora biti najbolji za rijetke tekstualne znacajke.
-
-Problem je u nacinu rada stabala. Stablo mora birati splitove po pojedinim
-znacajkama, a TF-IDF prostor ima mnogo rijetkih znacajki. Signal je rasprsen
-preko velikog broja rijeci i fraza, pa linearni model koji koristi sve znacajke
-odjednom bolje odgovara problemu.
-
-## H.9 ExtraTreesClassifier
-
-![Kartica H.9. `ExtraTreesClassifier`: ansambl ekstremno randomiziranih stabala
-koristi dodatnu slucajnost u odabiru znacajki i pragova splitova, sto ga
-razlikuje od random foresta.](figures/generated/classifier_cards/extra_trees.png){width=95%}
-
-`ExtraTreesClassifier` je postigao tocnost `0.8749`, bolje od random foresta,
-ali i dalje slabije od linearnih modela. Veca randomizacija u splitovima i
-ansamblu ovdje pomaze, no ne mijenja osnovnu cinjenicu da stabla nisu prirodan
-prvi izbor za TF-IDF tekst.
-
-U usporedbi je ipak koristan jer pokazuje razliku izmedu dva slicna bagging
-pristupa. Extra Trees je bio bolji od Random Forest modela, ali oba ostaju
-ispod `MultinomialNB`, `LogisticRegression`, `SGDClassifier` i `LinearSVC`
-rezultata.
-
-## H.10 XGBoostClassifier
-
-![Kartica H.10. `XGBoostClassifier`: gradient boosting gradi stabla sekvencijalno
-i svako novo stablo pokusava ispraviti preostale pogreske; na ovom rijetkom
-TF-IDF splitu model je imao najvise lazno pozitivnih pogresaka medu obaveznim
-modelima.](figures/generated/classifier_cards/xgboost_classifier.png){width=95%}
-
-`XGBoostClassifier` je postigao tocnost `0.8509`, najslabiju medu obaveznim
-modelima. To ne znaci da je XGBoost los algoritam. Naprotiv, on je cesto vrlo
-jak na strukturiranim podacima. Ovdje je problem kombinacija boosting stabala i
-vrlo rijetkog tekstualnog prostora.
-
-Matrica zabune pokazuje velik broj lazno pozitivnih predikcija. Model je cesce
-oznacavao recenzije kao pozitivne nego sto je trebalo. To je vazan rezultat jer
-pokazuje da same napredne tablicne metode ne jamce najbolji NLP rezultat ako
-prikaz znacajki ne odgovara njihovim jakim stranama.
-
-## H.11 LightGBMClassifier
-
-![Kartica H.11. `LightGBMClassifier`: LightGBM koristi ucinkovit histogram split
-search i leaf-wise rast stabala; bio je najbolji tree/boosting model u projektu,
-ali nije dostigao linearne TF-IDF modele po tocnosti.](figures/generated/classifier_cards/lightgbm_classifier.png){width=95%}
-
-`LightGBMClassifier` je najbolji stablima temeljeni model u projektu. Postigao
-je tocnost `0.8918`, F1 `0.8925` i log-loss `0.2617`. Po tocnosti ne dostize
-linearne modele, ali ima vrlo dobar probabilisticki izlaz u ovom eksperimentu.
-
-Zbog toga je LightGBM zanimljiv clan soft voting ensemblea. Iako nije najbolji
-po tvrdim labelama, njegove vjerojatnosti mogu biti korisne kada se prosjecuju
-s drugim probabilistickim modelima. To je dobar primjer zasto nije dovoljno
-gledati samo accuracy; razlicite metrike mogu naglasiti razlicite kvalitete
-modela.
-
-# Dodatak I: Kratki plan usmene prezentacije
+# Dodatak G: Kratki plan usmene prezentacije
 
 Prezentacija je zamisljena za 10-15 minuta. Cilj nije procitati cijeli
 izvjestaj, nego jasno pokazati da su ispunjeni zahtjevi teme 7 i da su rezultati
 dobiveni stvarnim eksperimentima.
 
-## I.1 Uvod i zadatak
+## G.1 Uvod i zadatak
 
 Prvi dio prezentacije treba u jednoj minuti reci sto je problem: binarna
 klasifikacija IMDb recenzija na pozitivan i negativan sentiment. Treba odmah
@@ -1332,7 +984,7 @@ naglasiti da nije bilo rucnog labeliranja i da su dataset izvori oni navedeni u
 materijalima kolegija. Time se zatvara moguce pitanje je li tema zahtijevala
 manualno oznacavanje podataka.
 
-## I.2 Podaci i TF-IDF pipeline
+## G.2 Podaci i TF-IDF pipeline
 
 Drugi dio treba objasniti 50 000 recenzija, stratificirani 80/20 split i
 cinjenicu da je testni skup uravnotezen s 5 000 pozitivnih i 5 000 negativnih
@@ -1341,7 +993,7 @@ skupu i da testni podaci ne smiju utjecati na izbor znacajki. Vizualno je
 najbolje proci kroz tok: raw review, TF-IDF vokabular, sparse matrix,
 klasifikator, sentiment.
 
-## I.3 Modeli i metrika
+## G.3 Modeli i metrika
 
 Treba kratko grupirati modele umjesto objasnjavati svih deset jednako dugo:
 Bayesovi modeli, linearni modeli, tree/bagging modeli i boosting modeli.
@@ -1350,7 +1002,7 @@ visokodimenzionalni TF-IDF prostor. Kod metrika treba naglasiti da nisu
 prikazani samo accuracy i F1, nego i ROC-AUC, PR-AUC, MCC, log-loss i matrice
 zabune.
 
-## I.4 Rezultati i ensemble
+## G.4 Rezultati i ensemble
 
 Glavni rezultat obaveznog dijela je `LinearSVC` s tocnosti `0.9150`. Ensemble
 dio treba prikazati iskreno: soft voting, hard voting i prefit stacking su
@@ -1358,7 +1010,7 @@ implementirani, ali ne nadmasuju najbolji pojedinacni linearni model. To nije
 neuspjeh, nego rezultat eksperimenta. Zadatak trazi da se ensemble slozi, a ne
 da on nuzno bude najbolji model.
 
-## I.5 Transformer prosirenje
+## G.5 Transformer prosirenje
 
 Transformer dio treba predstaviti kao dodatno istrazivanje. Mali transformer od
 nule ne pobjeduje TF-IDF linearni model, sto je vazan negativan rezultat.
@@ -1366,7 +1018,7 @@ Predtrenirani modeli, posebno `DeBERTa-v3-small`, daju znatno bolji rezultat
 jer koriste transfer learning. Treba jasno reci da transformer ne zamjenjuje
 obavezni TF-IDF dio.
 
-## I.6 Zakljucak
+## G.6 Zakljucak
 
 Zavrsna poruka: projekt ispunjava propisani TF-IDF dio, linearni modeli su
 najbolji za ovaj prikaz podataka, ensemble je implementiran, a predtrenirani

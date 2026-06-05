@@ -73,12 +73,14 @@ Source of truth: `AGENTS.md` and the introductory course PDF.
   required TF-IDF/classical comparison.
 - `outputs/` is ignored by git; important final numbers must be copied into
   tracked report/presentation files.
-- Final report renders to 41 DOCX pages and includes 23 centered/captioned
+- Final report renders to 45 DOCX pages and includes 20 centered/captioned
   explanatory infographics under `figures/generated/`.
-- Appendix H now contains one detailed image-generated card for each required
-  classifier family: MultinomialNB, ComplementNB, LogisticRegression,
-  LinearSVC, SGDClassifier, PassiveAggressiveClassifier, RandomForestClassifier,
-  ExtraTreesClassifier, XGBoostClassifier, and LightGBMClassifier.
+- The ten required classifier cards now appear in the main body, in section 5
+  next to each classifier/family explanation, rather than being buried in a
+  large appendix.
+- Appendices are reduced to supporting material (`Dodatak A`-`G`): artifacts,
+  run commands, environment, assignment coverage, limitations, source links, and
+  oral-presentation plan.
 
 ## Progress Checklist
 
@@ -142,8 +144,10 @@ Use these statuses:
   captions, bordered tables, repeated table headers, and cleaner appendix page
   breaks.
 - `[x]` Inspect the revised DOCX render one page at a time for the affected
-  figure-heavy pages, including Appendix H classifier cards and the final
-  Appendix I pages.
+  figure-heavy pages, including the TF-IDF pages, section 5 classifier cards,
+  result/confusion-matrix tables, transformer pages, and final Appendix G page.
+- `[x]` Ensure top-level sections start on new pages and fix the classical
+  confusion-matrix table so every row renders visibly in the PDF/DOCX output.
 
 ### Presentation
 
