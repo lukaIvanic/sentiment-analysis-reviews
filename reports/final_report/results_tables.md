@@ -59,7 +59,9 @@ These tables are generated from local `outputs/**/metrics.json` and `outputs/**/
 | model | accuracy | balanced_accuracy | precision | recall | f1 | roc_auc | pr_auc | mcc | log_loss |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Tiny Transformer from scratch | 0.8943 | 0.8943 | 0.8796 | 0.9136 | 0.8963 | 0.9603 | 0.9592 | 0.7892 | 0.2789 |
+| DistilBERT pre-fine-tune eval | 0.4036 | 0.4036 | 0.4184 | 0.4942 | 0.4531 | 0.3712 | 0.4207 | -0.1960 | 0.6967 |
 | DistilBERT fine-tuned | 0.9369 | 0.9369 | 0.9296 | 0.9454 | 0.9374 | 0.9840 | 0.9831 | 0.8739 | 0.1888 |
+| DeBERTa-v3-small pre-fine-tune eval | 0.5000 | 0.5000 | 0.0000 | 0.0000 | 0.0000 | 0.4869 | 0.4942 | 0.0000 | 0.6977 |
 | DeBERTa-v3-small fine-tuned | 0.9564 | 0.9564 | 0.9521 | 0.9612 | 0.9566 | 0.9895 | 0.9886 | 0.9128 | 0.1561 |
 
 
@@ -68,5 +70,7 @@ These tables are generated from local `outputs/**/metrics.json` and `outputs/**/
 | model | tn | fp | fn | tp |
 | --- | ---: | ---: | ---: | ---: |
 | Tiny Transformer from scratch | 4375 | 625 | 432 | 4568 |
+| DistilBERT pre-fine-tune eval | 1565 | 3435 | 2529 | 2471 |
 | DistilBERT fine-tuned | 4642 | 358 | 273 | 4727 |
+| DeBERTa-v3-small pre-fine-tune eval | 5000 | 0 | 5000 | 0 |
 | DeBERTa-v3-small fine-tuned | 4758 | 242 | 194 | 4806 |

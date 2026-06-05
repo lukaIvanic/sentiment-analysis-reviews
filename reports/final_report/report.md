@@ -648,13 +648,17 @@ zadatak pozitivnog ili negativnog sentimenta. Koristen je AdamW s
 `learning_rate=2e-5`, `weight_decay=0.01`, warmup omjerom `0.06` i mixed
 precision treniranjem na CUDA uredaju.
 
-Nije posebno mjeren testni accuracy predtreniranih BERT modela prije
-fine-tuninga. To bi bilo lose definirano za ovu implementaciju: checkpoint
-`distilbert-base-uncased` ili `microsoft/deberta-v3-small` ima predtreniranu
-jezicnu bazu, ali klasifikacijska glava u `AutoModelForSequenceClassification`
-nije IMDb sentiment model dok se ne prilagodi na oznake. Takva "prije treninga"
-tocnost mjerila bi uglavnom slucajno inicijaliziranu glavu, a ne stvarnu
-sposobnost predtreniranog jezicnog modela za sentiment.
+Nakon glavnih eksperimenata izmjeren je i testni accuracy predtreniranih
+transformera prije fine-tuninga, s `epochs=0`. To je dijagnosticki rezultat, a
+ne posteni "zero-shot sentiment" model: checkpoint `distilbert-base-uncased` ili
+`microsoft/deberta-v3-small` ima predtreniranu jezicnu bazu, ali
+klasifikacijska glava u `AutoModelForSequenceClassification` nije IMDb sentiment
+model dok se ne prilagodi na oznake. Zato ta tocnost uglavnom mjeri slucajno
+inicijaliziranu glavu. Rezultat to potvrduje: DistilBERT prije fine-tuninga ima
+test accuracy `0.4036`, a DeBERTa-v3-small `0.5000`, pri cemu DeBERTa predvida
+sve primjere kao negativne. Za DistilBERT je pre-FT MCC cak negativan
+(`-0.1960`), a DeBERTa ima F1 `0.0000` jer nema nijedan pozitivan predikt.
+Potpuni dijagnosticki redci nalaze se u `results_table.csv` i dodatku E.
 
 U sljedecoj tablici "Start" oznacava je li model krenuo od random
 inicijalizacije ili od predtrenirane jezicne baze s novom klasifikacijskom
@@ -663,8 +667,8 @@ glavom. `Val@1` je validacijska tocnost nakon prve epohe fine-tuninga.
 | Model | Start | ACC prije FT | Val@1 | Best val | Test ACC | Greske |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | Tiny | scratch | n/a | 0.8613 | 0.8935 | 0.8943 | 1057 |
-| DistilBERT | pretrained + nova glava | nije mjereno | 0.9220 | 0.9340 | 0.9369 | 631 |
-| DeBERTa | pretrained + nova glava | nije mjereno | 0.9493 | 0.9565 | 0.9564 | 436 |
+| DistilBERT | pretrained + nova glava | 0.4036 | 0.9220 | 0.9340 | 0.9369 | 631 |
+| DeBERTa | pretrained + nova glava | 0.5000 | 0.9493 | 0.9565 | 0.9564 | 436 |
 
 | Model | Prec. | Rec. | F1 | ROC-AUC | PR-AUC | Log-loss | MCC |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -975,19 +979,20 @@ predznanje nauceno na mnogo vecim korpusima.
 | Tiny MLX pocetni pokus | oko 13k | 128 | MLX, 256 BPE tokena | oko `0.646` | `0.6385` | oko 70 s |
 | Tiny MLX najbolji od nule | 263k | 512 | MLX, 10k BPE, mean pooling, mikro-batch 4 | `0.8935` | `0.8943` | oko 17.1 min |
 | Tiny Torch CUDA kontekst 1024 | 263k | 1024 | RTX 3090, fp16, batch 16 | `0.8742` | `0.8840` | oko 3.7 min |
+| DistilBERT prije fine-tuninga | 66.96M | 512 | RTX 3090, `epochs=0`, nova klasifikacijska glava | n/a | `0.4036` | eval-only |
 | DistilBERT | 66.96M | 512 | RTX 3090, 3 epohe, batch 32 | `0.9340` | `0.9369` | oko 10.8 min |
+| DeBERTa-v3-small prije fine-tuninga | 141.90M | 512 | RTX 3090, `epochs=0`, nova klasifikacijska glava | n/a | `0.5000` | eval-only |
 | DeBERTa-v3-small | 141.90M | 512 | RTX 3090, 3 epohe, batch 16 | `0.9565` | `0.9564` | oko 25.9 min |
+
+| Dijagnosticki pre-FT model | ACC | F1 | ROC-AUC | PR-AUC | Log-loss | TN | FP | FN | TP |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| DistilBERT prije FT | 0.4036 | 0.4531 | 0.3712 | 0.4207 | 0.6967 | 1565 | 3435 | 2529 | 2471 |
+| DeBERTa prije FT | 0.5000 | 0.0000 | 0.4869 | 0.4942 | 0.6977 | 5000 | 0 | 5000 | 0 |
 
 Za `DistilBERT` i `DeBERTa-v3-small` koristen je AdamW, `learning_rate=2e-5`,
 `weight_decay=0.01`, warmup omjer `0.06` i mixed precision na CUDA uredaju.
 `DistilBERT` je koristio batch 32, a `DeBERTa-v3-small` batch 16. Oba modela
 koriste 36 000 primjera za treniranje, 4 000 za validaciju i 10 000 za test.
-
-Najvazniji zakljucak je da arhitektura sama po sebi nije dovoljna. Mali
-transformer od nule ne nadmasuje `LinearSVC`, dok predtrenirani DeBERTa model
-znatno nadmasuje sve klasicne modele. Time se jasno vidi razlika izmedu
-ucenja reprezentacije od nule na 40 000 recenzija i prijenosa znanja iz velikog
-jezicnog predtreniranja.
 
 # Dodatak F: Kontrolna lista zahtjeva
 

@@ -55,17 +55,17 @@ cost points than to fail the submission.
 - Python source compilation: `python -m compileall src classifiers` passed.
 - DOCX render: `reports/final_report/analiza_sentimenta_recenzija.docx`
   rendered successfully to 45 PNG pages.
-- Report source length after restructuring and transformer expansion: 7,418
+- Report source length after restructuring and transformer expansion: 7,547
   words.
 - DOCX structure check: 20 embedded images, 20 centered image paragraphs,
-  20 captions, 12 tables, and 12 bordered tables.
+  20 captions, 13 tables, and 13 bordered tables.
 - Revised visual QA: affected DOCX pages were inspected one by one, especially
   the dataset/metrics/TF-IDF pages, section 6 classifier-card pages, results
   tables, transformer section, appendices, and final Appendix G page.
 - Transformer tables were simplified into an experiment-progression table and a
-  compact final-metrics table, with an explicit note that pre-fine-tune BERT
-  accuracy was not measured because the sequence-classification head is newly
-  initialized before task fine-tuning.
+  compact final-metrics table. Pre-fine-tune DistilBERT/DeBERTa diagnostic
+  results are now measured with `epochs=0` and labeled as newly initialized
+  classification-head evaluations, not fair zero-shot sentiment models.
 - The ten detailed classifier cards now appear in the main body near the first
   substantive explanation of each classifier/family. They are no longer
   isolated in a large appendix.

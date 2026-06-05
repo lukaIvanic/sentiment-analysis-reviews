@@ -297,6 +297,8 @@ def choose_widths(table) -> list[int]:
 
     if cols == 7 and "model" in first_row[0]:
         return [2200, 1120, 1120, 1320, 1180, 1180, 1240]
+    if cols == 10 and "dijagnosticki" in first_row[0]:
+        return [2040, 800, 800, 900, 900, 980, 735, 735, 735, 735]
     if cols == 5 and "model" in first_row[0]:
         return [3000, 1590, 1590, 1590, 1590]
     if cols == 4 and "model" in first_row[0]:
