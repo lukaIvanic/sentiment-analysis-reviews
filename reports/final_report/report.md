@@ -648,23 +648,29 @@ zadatak pozitivnog ili negativnog sentimenta. Koristen je AdamW s
 `learning_rate=2e-5`, `weight_decay=0.01`, warmup omjerom `0.06` i mixed
 precision treniranjem na CUDA uredaju.
 
-| Model | ACC | BACC | Precision | Recall | F1 | MCC |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Tiny transformer od nule | 0.8943 | 0.8943 | 0.8796 | 0.9136 | 0.8963 | 0.7892 |
-| DistilBERT | 0.9369 | 0.9369 | 0.9296 | 0.9454 | 0.9374 | 0.8739 |
-| DeBERTa-v3-small | 0.9564 | 0.9564 | 0.9521 | 0.9612 | 0.9566 | 0.9128 |
+Nije posebno mjeren testni accuracy predtreniranih BERT modela prije
+fine-tuninga. To bi bilo lose definirano za ovu implementaciju: checkpoint
+`distilbert-base-uncased` ili `microsoft/deberta-v3-small` ima predtreniranu
+jezicnu bazu, ali klasifikacijska glava u `AutoModelForSequenceClassification`
+nije IMDb sentiment model dok se ne prilagodi na oznake. Takva "prije treninga"
+tocnost mjerila bi uglavnom slucajno inicijaliziranu glavu, a ne stvarnu
+sposobnost predtreniranog jezicnog modela za sentiment.
 
-| Model | ROC-AUC | PR-AUC | Log-loss |
-| --- | ---: | ---: | ---: |
-| Tiny transformer od nule | 0.9603 | 0.9592 | 0.2789 |
-| DistilBERT | 0.9840 | 0.9831 | 0.1888 |
-| DeBERTa-v3-small | 0.9895 | 0.9886 | 0.1561 |
+U sljedecoj tablici "Start" oznacava je li model krenuo od random
+inicijalizacije ili od predtrenirane jezicne baze s novom klasifikacijskom
+glavom. `Val@1` je validacijska tocnost nakon prve epohe fine-tuninga.
 
-| Model | TN | FP | FN | TP |
-| --- | ---: | ---: | ---: | ---: |
-| Tiny Transformer od nule | 4375 | 625 | 432 | 4568 |
-| DistilBERT fine-tuned | 4642 | 358 | 273 | 4727 |
-| DeBERTa-v3-small fine-tuned | 4758 | 242 | 194 | 4806 |
+| Model | Start | ACC prije FT | Val@1 | Best val | Test ACC | Greske |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| Tiny | scratch | n/a | 0.8613 | 0.8935 | 0.8943 | 1057 |
+| DistilBERT | pretrained + nova glava | nije mjereno | 0.9220 | 0.9340 | 0.9369 | 631 |
+| DeBERTa | pretrained + nova glava | nije mjereno | 0.9493 | 0.9565 | 0.9564 | 436 |
+
+| Model | Prec. | Rec. | F1 | ROC-AUC | PR-AUC | Log-loss | MCC |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Tiny | 0.8796 | 0.9136 | 0.8963 | 0.9603 | 0.9592 | 0.2789 | 0.7892 |
+| DistilBERT | 0.9296 | 0.9454 | 0.9374 | 0.9840 | 0.9831 | 0.1888 | 0.8739 |
+| DeBERTa | 0.9521 | 0.9612 | 0.9566 | 0.9895 | 0.9886 | 0.1561 | 0.9128 |
 
 Najbolji ukupni model je `microsoft/deberta-v3-small`. On ima 436 pogresaka na
 10 000 testnih primjera, dok `LinearSVC` ima 850 pogresaka. Razlika je velika,

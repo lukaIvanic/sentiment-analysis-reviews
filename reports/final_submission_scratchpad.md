@@ -82,6 +82,9 @@ Source of truth: `AGENTS.md` and the introductory course PDF.
   progression, including the 256-token failure, 10k BPE/mean-pooling/warmup
   run, the best MLX scratch result (`0.8943` test accuracy), CUDA context checks,
   and pretrained DistilBERT/DeBERTa fine-tuning.
+- The transformer result tables now separate experiment progression from final
+  metrics, and explicitly state that pre-fine-tune BERT/DeBERTa accuracy was
+  not measured.
 - The ten required classifier cards now appear in the main body, in section 6
   next to each classifier/family explanation, rather than being buried in a
   large appendix.
@@ -145,6 +148,8 @@ Use these statuses:
   substitute for assignment requirements.
 - `[x]` Expand the transformer section with the actual experiment progression
   and update the tiny-transformer table/figure values.
+- `[x]` Replace the transformer metric block with cleaner tables and document
+  why pre-fine-tune BERT accuracy is not reported.
 - `[x]` Include limitations and conclusion.
 - `[x]` Ensure all claims have local file/output evidence.
 - `[x]` Include generated explanatory infographics for the pipeline, TF-IDF,
