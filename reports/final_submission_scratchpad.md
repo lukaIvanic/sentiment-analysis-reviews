@@ -83,9 +83,8 @@ Source of truth: `AGENTS.md` and the introductory course PDF.
   run, the best MLX scratch result (`0.8943` test accuracy), CUDA context checks,
   and pretrained DistilBERT/DeBERTa fine-tuning.
 - The transformer result tables now separate experiment progression from final
-  metrics. Pre-fine-tune DistilBERT/DeBERTa diagnostic evaluations were added
-  with `epochs=0`: DistilBERT accuracy `0.4036`; DeBERTa accuracy `0.5000`
-  with all-negative predictions.
+  metrics, with the eval-only random-head transformer diagnostic removed from
+  the submission-facing material to avoid misleading interpretation.
 - The ten required classifier cards now appear in the main body, in section 6
   next to each classifier/family explanation, rather than being buried in a
   large appendix.
@@ -149,8 +148,8 @@ Use these statuses:
   substitute for assignment requirements.
 - `[x]` Expand the transformer section with the actual experiment progression
   and update the tiny-transformer table/figure values.
-- `[x]` Replace the transformer metric block with cleaner tables and include
-  measured pre-fine-tune diagnostic results for DistilBERT and DeBERTa.
+- `[x]` Replace the transformer metric block with cleaner tables focused on the
+  trained scratch and fine-tuned transformer results.
 - `[x]` Include limitations and conclusion.
 - `[x]` Ensure all claims have local file/output evidence.
 - `[x]` Include generated explanatory infographics for the pipeline, TF-IDF,

@@ -14,7 +14,5 @@ VotingClassifier soft,Required final ensemble,0.9095,0.9095,0.9036,0.9168,0.9102
 VotingClassifier hard,Required final ensemble,0.9107,0.9107,0.9059,0.9166,0.9112,,,0.8215,,4524,476,417,4583,outputs/ensemble/hard_voting_classifier
 StackingClassifier prefit,Required final ensemble alternative,0.9099,0.9099,0.9077,0.9126,0.9101,0.9686,0.9669,0.8198,0.4079,4536,464,437,4563,outputs/ensemble/stacking_classifier_prefit
 Tiny Transformer from scratch,Optional extension,0.8943,0.8943,0.8796,0.9136,0.8963,0.9603,0.9592,0.7892,0.2789,4375,625,432,4568,outputs/transformer/tiny_transformer_mlx_vocab10k_mean_warmup_cosine_d24_l4_s512_accum_fp32_full
-DistilBERT pre-fine-tune eval,Optional diagnostic,0.4036,0.4036,0.4184,0.4942,0.4531,0.3712,0.4207,-0.1960,0.6967,1565,3435,2529,2471,outputs/transformer/distilbert_s512_pre_finetune_eval
 DistilBERT fine-tuned,Optional extension,0.9369,0.9369,0.9296,0.9454,0.9374,0.9840,0.9831,0.8739,0.1888,4642,358,273,4727,outputs/transformer/distilbert_s512_lr2e5_b32_e3
-DeBERTa-v3-small pre-fine-tune eval,Optional diagnostic,0.5000,0.5000,0.0000,0.0000,0.0000,0.4869,0.4942,0.0000,0.6977,5000,0,5000,0,outputs/transformer/deberta_v3_small_s512_pre_finetune_eval
 DeBERTa-v3-small fine-tuned,Optional extension,0.9564,0.9564,0.9521,0.9612,0.9566,0.9895,0.9886,0.9128,0.1561,4758,242,194,4806,outputs/transformer/deberta_v3_small_s512_lr2e5_b16_e3
