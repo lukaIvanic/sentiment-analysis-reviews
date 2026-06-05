@@ -36,10 +36,10 @@ cost points than to fail the submission.
 | Topic 7, sentiment analysis of reviews | pass | `AGENTS.md`; report section 2 |
 | Legit labelled datasets | pass | Kaggle IMDb 50K and Stanford ACL IMDB listed in report section 3 |
 | No manual labelling | pass | report sections 3 and summary explicitly state no manual labelling |
-| TF-IDF for required comparison | pass | report section 4; classical runner folders use `TfidfVectorizer` |
-| 10 required classifiers | pass | report section 8 includes all required families |
-| RandomizedSearchCV | pass | tuned MultinomialNB row; report section 6 |
-| Cross-validation | pass | tuned MultinomialNB uses `cv=3`; report section 6 |
+| TF-IDF for required comparison | pass | report section 5; classical runner folders use `TfidfVectorizer` |
+| 10 required classifiers | pass | report section 6 includes all required families |
+| RandomizedSearchCV | pass | tuned MultinomialNB row; report section 7 |
+| Cross-validation | pass | tuned MultinomialNB uses `cv=3`; report section 7 |
 | ACC, BACC, precision, recall, F1 | pass | `reports/final_report/results_tables.md`; report section 8 |
 | ROC-AUC, PR-AUC, MCC | pass | `reports/final_report/results_tables.md`; report section 8 |
 | Log-loss | pass with explanation | reported where `predict_proba` exists; n/a explained for uncalibrated margin models |
@@ -55,12 +55,13 @@ cost points than to fail the submission.
 - Python source compilation: `python -m compileall src classifiers` passed.
 - DOCX render: `reports/final_report/analiza_sentimenta_recenzija.docx`
   rendered successfully to 45 PNG pages.
-- Report source length after restructuring: 6,950 words.
+- Report source length after restructuring and transformer expansion: 7,343
+  words.
 - DOCX structure check: 20 embedded images, 20 centered image paragraphs,
   20 captions, 13 tables, and 13 bordered tables.
 - Revised visual QA: affected DOCX pages were inspected one by one, especially
-  the TF-IDF/pipeline pages, section 5 classifier-card pages, results tables,
-  transformer section, appendices, and final Appendix G page.
+  the dataset/metrics/TF-IDF pages, section 6 classifier-card pages, results
+  tables, transformer section, appendices, and final Appendix G page.
 - The ten detailed classifier cards now appear in the main body near the first
   substantive explanation of each classifier/family. They are no longer
   isolated in a large appendix.
@@ -70,7 +71,8 @@ cost points than to fail the submission.
   and embedded in the DOCX.
 - Presentation: 12 slides, within the 10-20 slide guidance. The final PPTX was
   rendered through artifact-tool and each slide preview was inspected one by
-  one. No overlaps were found; two table slides are plain but readable.
+  one. Slide 10 was refreshed with the updated scratch-transformer result. No
+  overlaps were found; two table slides are plain but readable.
 - Important generated results were copied into tracked files:
   `reports/final_report/results_table.csv` and
   `reports/final_report/results_tables.md`.

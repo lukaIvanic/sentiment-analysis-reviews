@@ -31,7 +31,8 @@ All full runs below were executed remotely on an RTX 3090 Vast.ai instance.
 
 | Run | Model | Max length | Batch | Epochs | Best val acc | Test acc | Test F1 | ROC-AUC |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Scratch parity | 263k-param tiny transformer | 512 | 16 | 5 | 0.8750 | 0.8779 | 0.8747 | 0.9511 |
+| Scratch best | 263k-param tiny transformer, MLX | 512 | 16 effective | 5 | 0.8935 | 0.8943 | 0.8963 | 0.9603 |
+| Scratch CUDA context check | 263k-param tiny transformer | 1024 | 16 | 5 | 0.8742 | 0.8840 | 0.8821 | 0.9529 |
 | Fine-tune sanity | `distilbert-base-uncased` | 512 | 32 | 3 | 0.9340 | 0.9369 | 0.9374 | 0.9840 |
 | Fine-tune main | `microsoft/deberta-v3-small` | 512 | 16 | 3 | 0.9565 | 0.9564 | 0.9566 | 0.9895 |
 

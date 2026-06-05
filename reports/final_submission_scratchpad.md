@@ -75,7 +75,14 @@ Source of truth: `AGENTS.md` and the introductory course PDF.
   tracked report/presentation files.
 - Final report renders to 45 DOCX pages and includes 20 centered/captioned
   explanatory infographics under `figures/generated/`.
-- The ten required classifier cards now appear in the main body, in section 5
+- The report now places metrics after the dataset section and before
+  preprocessing/TF-IDF, matching the natural evaluation-before-pipeline reading
+  order.
+- The optional transformer section now documents the scratch-model experiment
+  progression, including the 256-token failure, 10k BPE/mean-pooling/warmup
+  run, the best MLX scratch result (`0.8943` test accuracy), CUDA context checks,
+  and pretrained DistilBERT/DeBERTa fine-tuning.
+- The ten required classifier cards now appear in the main body, in section 6
   next to each classifier/family explanation, rather than being buried in a
   large appendix.
 - Appendices are reduced to supporting material (`Dodatak A`-`G`): artifacts,
@@ -136,6 +143,8 @@ Use these statuses:
 - `[x]` Include final model section for Voting/Stacking.
 - `[x]` Include optional transformer section as extra research, not as a
   substitute for assignment requirements.
+- `[x]` Expand the transformer section with the actual experiment progression
+  and update the tiny-transformer table/figure values.
 - `[x]` Include limitations and conclusion.
 - `[x]` Ensure all claims have local file/output evidence.
 - `[x]` Include generated explanatory infographics for the pipeline, TF-IDF,
@@ -144,7 +153,7 @@ Use these statuses:
   captions, bordered tables, repeated table headers, and cleaner appendix page
   breaks.
 - `[x]` Inspect the revised DOCX render one page at a time for the affected
-  figure-heavy pages, including the TF-IDF pages, section 5 classifier cards,
+  figure-heavy pages, including the TF-IDF pages, section 6 classifier cards,
   result/confusion-matrix tables, transformer pages, and final Appendix G page.
 - `[x]` Ensure top-level sections start on new pages and fix the classical
   confusion-matrix table so every row renders visibly in the PDF/DOCX output.
